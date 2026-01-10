@@ -161,6 +161,8 @@
 - Que queremos conseguir
 - Requisitos funcionales y no funcionales
 
+flujos continuos de agentes...
+
 - 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,6 +183,68 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Modelo}
+En MESA, un modelo es una clase que hereda de \texttt{mesa.Model} y que contiene la lógica principal de la simulación. 
+
+En concreto, los modelos de MESA se encargaran principalmente de inicializar el entorno, crear los agentes, definir la función \texttt{Step} que mueve a los agentes y actualizar y controlar el estado del entorno.
+
+\subsection{Entorno}
+En nuestro caso, el entorno será una malla bidimensional que representa los espacios por los que se moverán los agentes. Esta estará compuesta por agentes, obstáculos y salidas.
+
+Esta malla define por defecto una serie de funcionalidades que facilitan la gestión del espacio y la interacción entre agentes. Usaremos una malla de tipo \texttt{OrthogonalMooreGrid}, la cual permite a los agentes moverse en las cuatro direcciones cardinales y en las cuatro diagonales. No permitiremos que más de un agente ocupe la misma celda al mismo tiempo, y haremos que los obstáculos y las salidas ocupen celdas enteras en la malla.
+
+Se define un ancho y alto para la malla, y según el tipo de escenario seleccionado para la simulación, se generarán los obstáculos y las salidas en posiciones y formas específicas. Luego, los agentes aparecerán en el resto de celdas disponibles de forma aleatoria.
+
+En total, se han definido 6 escenarios diferentes, de los cuales nos interesan 4 para este trabajo:
+\begin{itemize}
+    \item \textbf{OPEN:} Un espacio abierto sin obstáculos. Hay salidas en los bordes de la malla. No es de mucho interés para este trabajo, pero sirve como referencia y espacio de experimentación.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{images/scenario_open.png}
+        \caption{Escenario OPEN sin obstáculos con la máxima cantidad de salidas posibles (8).}
+        \label{fig:scenario_open}
+    \end{figure}
+    \item \textbf{MALL:} Pretende simular un centro comercial donde se juntan varios pasillos con tiendas al rededor. Los agentes pueden moverse por los pasillos y por el anillo exterior, pero no pueden atravesar las tiendas. Las salidas están de dos a dos en los bordes de la malla. 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{images/scenario_mall.png}
+        \caption{Escenario MALL con la máxima cantidad de salidas posibles (8).}
+        \label{fig:scenario_mall}
+    \end{figure}
+    \item \textbf{CORRIDOR:} Similar a MALL, pretende simular la intersección de varios pasillos con poco espacio para moverse. Las salidas están de dos a dos en los finales de cada pasillo.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{images/scenario_corridor.png}
+        \caption{Escenario CORRIDOR con la máxima cantidad de salidas posibles (4).}
+        \label{fig:scenario_corridor}
+    \end{figure}
+    \item \textbf{SEATS:} Pretende simular un auditorio, cine o concierto, en el que todas las salidas están en un lado y el resto de la sala está llena de filas de asientos con 'pasillos' entre medias.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{images/scenario_seats.png}
+        \caption{Escenario SEATS con la máxima cantidad de salidas posibles (8).}
+        \label{fig:scenario_seats}
+    \end{figure}
+    \item \textbf{SNAKE:} Simula un pasillo zigzagueante con una o dos salidas en los extremos. La idea detrás de este escenario es ver el comportamiento de los agentes es espacios estrechos y con giros. Podrían simular una cola de personas.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{images/scenario_snake.png}
+        \caption{Escenario SNAKE con la máxima cantidad de salidas posibles (8).}
+        \label{fig:scenario_snake}
+    \end{figure}
+
+    \item \textbf{RANDOM:} Por último, este escenario genera obstáculos (paredes, círculos y cuadrados) de forma aleatoria en la malla. Las salidas están en los bordes de la malla. Al igual que OPEN, este escenario no es de mucho interés para el trabajo, pero sirve como referencia y espacio de experimentación.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{images/scenario_random.png}
+        \caption{Escenario RANDOM con la máxima cantidad de salidas posibles (8).}
+        \label{fig:scenario_random}
+    \end{figure}
+\end{itemize}
+
+La cantidad de salidas en cada escenario se puede configurar, yendo desde una sola salida hasta una cierta cantidad definida para cada uno. El tamaño de estos se puede cambiar y los obstáculos y salidas se adaptan de forma dinámica al nuevo tamaño.
+
+\section{Cálculo de caminos}
+
 
 \section{Agentes}
 
@@ -196,6 +260,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusiones}
 
+
+Mejoras: Mejor sistema anti deadlock, adaptando los caminos cuando agentes bloqueados marcan una celda como en deadlock
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 %                                BIBLIOGRAFIA                                 %
