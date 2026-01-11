@@ -109,7 +109,7 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%              RESUMENES DEL TFG EN VALENCIA, CASTELLA I ANGLES               %
+%              RESUMENES DEL TRABAJO EN VALENCIA, CASTELLA I ANGLES               %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -166,6 +166,57 @@ El objetivo principal de este trabajo es desarrollar un entorno de simulación m
     \item \textbf{Enfoque en Tendencias y Comportamiento}: El objetivo es simular tendencias emergentes y relaciones causales (p.ej. "¿Cómo afecta un 10\% de agentes agresivos al tiempo total de evacuación?") en lugar de predecir tiempos exactos de evacuación.
     \item \textbf{Tipología de Agentes}: Se busca simular la variabilidad de las personas usando perfiles de agentes (\textit{Polite}, \textit{Aggressive}, \textit{Slow}) para observar la composición de la multitud altera el comportamiento de esta.
 \end{itemize}
+
+\subsection{Tipos de situaciones a modelar}
+
+El sistema se centra en el estudio de situaciones de evacuación de emergencia, donde la rapidez y eficiencia del movimiento colectivo son críticas. Se pretende analizar cómo diferentes configuraciones de agentes y escenarios afectan métricas clave como el tiempo total de evacuación, la tasa de flujo y la congestión.
+
+Estos sistemas son relevantes en contextos como:
+\begin{itemize}
+    \item \textbf{Eventos Masivos}: Conciertos, festivales y eventos deportivos donde grandes multitudes deben ser gestionadas de manera segura.
+    \item \textbf{Infraestructuras Públicas}: Aeropuertos, estaciones de tren y centros comerciales que requieren planes de evacuación efectivos.
+    \item \textbf{Diseño Urbano}: Planificación de espacios públicos para optimizar el flujo peatonal y minimizar riesgos en situaciones de emergencia.
+\end{itemize}
+
+Ahora, el sistema también está dotado de la capacidad de simular \textbf{flujos continuos de personas}, pero este aspecto no se ha explorado en profundidad en este trabajo por limitaciones de alcance. 
+
+El enfoque principal sigue siendo la evacuación de emergencia, sin embargo, el sistema es lo suficientemente flexible como para permitir futuras investigaciones en escenarios de flujo diario y confort peatonal. La idea sigue siendo validar si un espacio es seguro y eficiente bajo diferentes condiciones de multitud. Permitiendo modelar de forma sencilla distintos escenarios y composiciones de agentes.
+
+\section{Uso de MESA}
+MESA es un framework de código abierto en Python diseñado para facilitar la creación, simulación y visualización de modelos basados en agentes. Proporciona una estructura modular que permite a los desarrolladores definir agentes, entornos y reglas de interacción de manera sencilla.
+
+Además, una vez el sistema está implementado, MESA ofrece herramientas integradas para la recolección de datos y la visualización en tiempo real, lo que facilita el análisis de los resultados de las simulaciones.
+
+En este trabajo, MESA se utiliza como la base para construir el modelo de simulación de multitudes, aprovechando sus capacidades para gestionar agentes heterogéneos y sus interacciones en un entorno discreto basado en malla.
+
+Se ha implementado todo el sistema siguiendo la documentación oficial de MESA \cite{mesa} y adaptando sus componentes a las necesidades específicas del estudio de multitudes.
+
+\section{Experimentación}
+El trabajo incluye un notebook de Jupyter que permite ejecutar simulaciones con diferentes configuraciones y escenarios, cambiarlos y visualizar los resultados y las estadísticas en tiempo real. 
+
+Este notebook facilita la experimentación al permitir modificar parámetros como la densidad de agentes, la proporción de tipos de agentes y las características del entorno. Además, incluye gráficos y tablas que resumen las métricas clave de cada simulación, permitiendo un análisis comparativo entre diferentes configuraciones.
+
+Cualquier persona interesada puede clonar el repositorio del proyecto, instalar las dependencias necesarias y ejecutar el notebook para replicar los experimentos o realizar nuevas pruebas con diferentes parámetros.
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.6\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/screenshoot_simulation.png}
+        \caption{Simulación en ejecución.}
+        \label{fig:screenshoot_simulation}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.37\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/screenshoot_simulation_ui.png}
+        \caption{Interfaz de usuario del notebook.}
+        \label{fig:screenshoot_simulation_ui}
+    \end{subfigure}
+    \caption{Capturas de pantalla del sistema de simulación.}
+    \label{fig:simulation_screenshots}
+\end{figure}
 
 \section{Estructura del Documento}
 El documento se estructura en: estado del arte, donde se revisan las tecnologías actuales; análisis del problema, donde se define la estrategia de modelado; evaluación experimental, detallando métricas y escenarios; implementación técnica; y finalmente los resultados y conclusiones obtenidos.
@@ -230,7 +281,7 @@ Dominantes en la industria de la animación y la robótica por su fidelidad visu
 \end{itemize}
 
 \subsection{Modelos Discretos y Grid-Based}
-Los modelos basados en Autómatas Celulares (CA) o mallas discretas dividen el espacio en celdas. Son la base del sistema implementado en este TFG.
+Los modelos basados en Autómatas Celulares (CA) o mallas discretas dividen el espacio en celdas. Son la base del sistema implementado en este trabajo.
 El desafío principal es la resolución de conflictos (cuando dos agentes compiten por la misma celda). El estado del arte actual emplea \textit{Floor Fields} (campos de potencial) estáticos y dinámicos para guiar a los agentes, y utiliza teoría de juegos o heurísticas de "paciencia" para resolver bloqueos, superando las reglas simples de exclusión \cite{TODO_floor_fields}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -238,28 +289,45 @@ El desafío principal es la resolución de conflictos (cuando dos agentes compit
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Análisis del problema}
 
-El desarrollo de simuladores de multitudes implica equilibrar el realismo físico con la complejidad computacional. Dado el objetivo de estudiar comportamientos emergentes en grandes grupos, se requiere una aproximación que permita simular cientos de entidades interactuando en tiempo real o cercano al tiempo real, sacrificando la precisión milimétrica en favor de la eficiencia estadística.
+El desarrollo de simuladores de multitudes implica equilibrar el realismo físico con la complejidad computacional. Dado el objetivo de estudiar comportamientos emergentes en grandes grupos, se requiere una aproximación que permita simular cientos de entidades interactuando en tiempo real o cercano al tiempo real, por lo que se prioriza la ejucución del trabajo para la asignatura antes que la precisión milimétrica.
 
-\section{Estrategia de Modelado: Discrete Grid-Based}
+Además, el framework MESA en Python, aunque flexible y modular, no está optimizado para simulaciones de alta fidelidad física. Por lo tanto, esto nos deja como mejor opción un modelo discreto basado en rejilla que simplifica la representación espacial y las interacciones entre agentes.
 
-Para cumplir con los requisitos identificados, se ha optado por un \textbf{Modelo Discreto basado en Rejilla (Grid-Based)}, implementado sobre el framework \textbf{MESA} en Python.
+\section{Modelo: Discrete Grid-Based}
 
-Esta decisión de diseño se justifica bajo los siguientes criterios:
+Para llevar a cabo las simulaciones, se ha optado por un \textbf{Modelo Discreto basado en Rejilla (Grid-Based)}, implementado sobre el framework \textbf{MESA} en Python.
+
+Comparado con los modelos planteados en el estado del arte, esta elección presenta las siguientes cualidades:
 \begin{enumerate}
-    \item \textbf{Espacio Discretizado}: El entorno se divide en celdas cuadradas, donde cada celda es un recurso atómico que puede contener un agente, una pared o una salida. Esto simplifica la detección de colisiones a una comprobación booleana de ocupación, eliminando los costosos cálculos de geometría continua.
-    \item \textbf{Tiempo Discretizado}: La simulación avanza en pasos discretos o "ticks". La velocidad se modela probabilísticamente: un agente con "mayor velocidad" simplemente tiene una mayor probabilidad estadística de moverse en un tick dado.
-    \item \textbf{Navegación}: La estructura de rejilla facilita la implementación directa de algoritmos de búsqueda de caminos en grafos como BFS y A*, esenciales para la planificación de rutas de los agentes.
+    \item \textbf{Espacio Discreto}: El entorno se divide en celdas cuadradas, donde cada celda haremos que solo pueda contener a un agente, a una pared (obstáculo) o una salida. Esto simplifica la detección de colisiones y elimina los costosos cálculos de geometría compleja.
+    \item \textbf{Tiempo Discreto}: La simulación avanza en pasos discretos o "steps". La velocidad se modela probabilísticamente: un agente con "mayor velocidad" simplemente tiene una mayor probabilidad de moverse en un step dado.
+    \item \textbf{Navegación}: La estructura de malla facilita la implementación directa de algoritmos de búsqueda de caminos en grafos como BFS y A*, esenciales para la planificación de rutas de los agentes. Con estos algoritmos, se pueden modelar las rutas óptimas hacia las salidas teniendo en cuenta los obstáculos.
 \end{enumerate}
 
-\section{Requisitos de Comportamiento: Tipología de Agentes}
+\section{Agentes: Comportamiento}
 
-Un análisis del comportamiento de multitudes revela que la homogeneidad es una asunción falsa. Para obtener resultados significativos, el sistema debe ser capaz de modelar distintos perfiles que interactúen entre sí:
+Si nos fijamos en análisis reales de multitudes, estas son de todo menos homogéneas. Para obtener resultados significativos, el sistema debe ser capaz de modelar distintos perfiles de agentes que interactúen entre sí. 
+
+En concreto, para este trabajo se han definido tres tipos de agentes con comportamientos diferenciados que pretenden agrupar las características más relevantes observadas en la gente:
 
 \begin{itemize}
-    \item \textbf{Polite (Educados)}: Requeridos para modelar la cooperación. Deben ser capaces de ceder el paso y esperar, evitando conflictos activos.
-    \item \textbf{Aggressive (Agresivos)}: Requeridos para modelar la competencia y el pánico. Necesitan lógica para priorizar su movimiento sobre el de los demás, ocupando espacios agresivamente.
-    \item \textbf{Slow (Lentos)}: Requeridos para modelar la diversidad física. Actúan como obstáculos dinámicos, permitiendo estudiar el impacto de los usuarios más vulnerables en el flujo general
+    \item \textbf{Polite (Educados)}: Serían la gente por defecto, educados y cooperativos. Deben ser capaces de ceder el paso y esperar, evitando conflictos activos y no imponerse ante los demás.
+    \item \textbf{Aggressive (Agresivos)}: Modelan la competencia y el pánico. Sería la gente que corre y se pone por delante. Su lógica ha de priorizar su movimiento sobre el de los demás, ocupando espacios libres sin consideración.
+    \item \textbf{Slow (Lentos)}: Modelan la diversidad física, gente con dificultades, niños o personas mayores. Actúan como obstáculos dinámicos y permiten estudiar el impacto de los usuarios más vulnerables en el flujo general.
 \end{itemize}
+
+Estos agentes serán muy simples en su lógica, interacción entre ellos y en la composición de la multitudes pero con pequeñas variaciones que los cualifican. Esto permitirá observar dinámicas emergentes interesantes. En concreto, vamos a evaluar comportamientos es choques de flujo, cuellos de botella y congestión en pasillos estrechos.
+
+\subsection{Dead locks}
+En las simulaciones basadas en mallas discretas, un desafío común es la aparición de \textbf{dead locks} o bloqueos mutuos entre agentes. Estos ocurren cuando varios agentes intentan moverse en direcciones opuestas en un espacio limitado, resultando en una situación donde ninguno puede avanzar: Uno va a la celda del otro y viceversa, pero para podes moverse, la celda debe estar libre.
+
+Para mitigar estas situaciones, se definen una serie de reglas y mecanismos dentro de la lógica de los agentes. Se mantendrá un contador de bloqueo que se incrementa cada vez que un agente no puede moverse y el comportamiento del agente cambiará ligeramente en función de este contador.
+
+Cada tipo de agente se verá más o menos afectado por los dead locks, y lo que provocará que los agentes dejen de ir en la dirección más próxima a la salidas y se muevan de forma aleatoria a celdas vecinas para intentar aliviar la congestión y / o encontrar una ruta alternativa.
+
+\subsection{Preferencias}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                           EVALUACIÓN                            %
@@ -305,6 +373,9 @@ En cada escenario, se modifican las siguientes variables independientes para obs
     \item \textbf{Estrategia de Navegación (A* vs BFS)}: Se comparan algoritmos para ver si el cálculo de rutas óptimas (A*) compensa su coste computacional frente a la exploración simple (BFS).
     \item \textbf{Configuración de Salidas}: Se prueba el impacto de asignar salidas fijas (preferencias) frente a dejar que los agentes elijan la más cercana (oportunismo).
 \end{itemize}
+
+\section{Flujos}
+\section{Deadlocks}
  
 % - We assume all exits are reachible
 
@@ -469,7 +540,7 @@ Se ha implementado un mecanismo de \textbf{Contador de Bloqueo} ($C_{dl}$) para 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                               RESULTADOS DE LA SOLUCIón                     %
+%                               RESULTADOS DE LA SOLUCIón              Cuando este contador supera un umbral, el agente entra en un estado especial donde relaja sus reglas de movimiento, permitiendo movimientos laterales o incluso retroceder para aliviar la congestión.       %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Resultados Experimentales}
 
