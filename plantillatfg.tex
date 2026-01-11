@@ -403,8 +403,22 @@ En cada escenario, se modifican las siguientes variables independientes para obs
     \item \textbf{Configuración de Salidas}: Se prueba el impacto de asignar salidas fijas (preferencias) frente a dejar que los agentes elijan la más cercana (oportunismo).
 \end{itemize}
 
-\section{Flujos}
 \section{Deadlocks}
+Los deadlocks serán estudiados mediante la métrica de \textbf{Factor de Bloqueo}, observando su evolución temporal y su correlación con la densidad y composición de la multitud.
+
+Se analizarán situaciones donde los deadlocks son más prevalentes, como en pasillos estrechos o intersecciones, y se evaluará la efectividad de las estrategias implementadas para mitigarlos.
+
+
+\section{Flujos}
+
+Como se ha mencionado, el sistema soporta la simulación de flujos continuos de personas, lo que permite ver como de transitable es un espacio y como le afectan variables como la densidad o la configuración del espacio.
+
+Ahora, este aspecto no se ha explorado en profundidad en este trabajo por limitaciones de alcance. Sin embargo, el sistema es lo suficientemente flexible como para permitir futuras investigaciones en escenarios de flujo diario y confort peatonal.
+
+Por ejemplo, se pueden re hacer los experimentos mencionados anteriormente pero con la opción de \textit{reaparición de agentes} activada. Luego, tras una cantidad decente te steps, el flujo se estabiliza y se pueden recoger métricas como la densidad media, velocidad media y ritmo de evacuación. 
+
+Durante el desarrollo, también se ha visto que estos sistemas tienden a oscilar, creando tapones de agentes que luego se disipan, y que pueden ser estudiados con las métricas implementadas.
+
  
 % - We assume all exits are reachible
 
@@ -462,7 +476,20 @@ En cada escenario, se modifican las siguientes variables independientes para obs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Implementación}
 
-El sistema ha sido implementado utilizando Python y la librería \textbf{Mesa}, un framework modular para el modelado basado en agentes. Esta elección permite una rápida prototipación, una fácil extensibilidad de comportamientos y la recolección eficiente de métricas estadísticas.
+El sistema ha sido implementado utilizando Python y la librería \textbf{MESA}, como se ha mencionado, es un framework modular para el modelado basado en agentes y es bastante popular porque permite una rápida prototipación, una fácil extensibilidad de comportamientos y la recolección eficiente de métricas estadísticas.
+
+Los principales componentes que hay que definir en MESA son los mencionados hasta ahora: el modelo (entorno) y los agentes (comportamiento). Además, MESA ofrece herramientas para la visualización y recolección de datos que se han aprovechado en este trabajo.
+
+\section{Visualización y Recolección de Datos}
+MESA incluye un módulo de visualización basado en navegador web que permite observar la simulación en tiempo real. 
+
+Aprovechamos esta funcionalidad para crear una interfaz interactiva donde se pueden ajustar parámetros como la densidad de agentes, la proporción de tipos de agentes y las características del entorno antes de iniciar la simulación.
+
+Además, para hacer visibles los agentes, colearemos diferentes colores según su tipo: los agentes \textit{Polite} serán de color azul, los \textit{Aggressive} rojos y los \textit{Slow} verdes si están en modo evacuación yendo a la salida más cercana. Si tienen una salida favorita asignada, se usarán colores específicos para cada una. Por último, los obstáculos se representarán en gris oscuro. 
+
+Haremos gráficas en tiempo real de las métricas más importantes, una tabla resumen de los datos actuales de la simulación y una visualización del entorno con la distancia a la salida más cercana de cada celda.
+
+En la Figura \ref{fig:simulation_screenshots} se pueden ver capturas de pantalla del sistema de simulación final con ejemplos de lo mencionado. 
 
 \section{Estructura del Modelo}
 En MESA, un modelo es una clase que hereda de \texttt{mesa.Model} y que contiene la lógica principal de la simulación. 
