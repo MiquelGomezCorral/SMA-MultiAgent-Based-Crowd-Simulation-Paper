@@ -34,6 +34,7 @@
 %                                                                             %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\usepackage{csquotes}
 \usepackage{glossaries}
 \usepackage{textcomp}
 \usepackage{booktabs}
@@ -113,47 +114,12 @@
 
 
 \begin{abstract}[spanish]
-You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
 
+Este trabajo presenta el desarrollo e implementación de un sistema de simulación multi-agente para el estudio de dinámicas de evacuación y comportamiento de multitudes. Utilizando el framework MESA en Python, se ha creado un modelo discreto basado en malla que permite analizar el impacto de comportamientos individuales y globales de grupos de personas.
 
+Se han implementado tres tipologías de agentes (educados, agresivos y lentos) que interactúan en diferentes escenarios. Estos escenarios representan espacios y situaciones reales. Los resultados experimentales revelan conclusiones contraintuitivas respecto a la literatura clásica, demostrando que en modelos discretos la agresividad puede mejorar la eficiencia global del sistema de evacuación.
 
-I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
-
-- SOTA
-- Análisis del problema and what we want to achieve, 
-- How we are going to evaluate the system
-- Implementation 
-- Results 
-- Conclusion
-- Introducction
-- Abstract
-
-
-Every step you will be able to see the current state of the project and how it is implemented. 
-
-So, make your self a favor and read it all and write a resume to begin
-
-The code is at You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
-
-
-
-I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
-
-- SOTA
-- How we are going to evaluate the system
-- Implementation 
-- Results 
-- Conclusion
-- Introducction
-- Abstract
-
-
-Every step you will be able to see the current state of the project and how it is implemented. 
-
-The code is at SMA-MultiAgent-Based-Crowd-Simulation/app
-and the paper at SMA-MultiAgent-Based-Crowd-Simulation=paper/plantillatfg.tex
-
-
+Se presenta el sistema con todos sus componentes, la metodología de evaluación y los resultados obtenidos, destacando las implicaciones prácticas para el diseño de espacios seguros y eficientes.
 
 \end{abstract}
 
@@ -185,193 +151,220 @@ and the paper at SMA-MultiAgent-Based-Crowd-Simulation=paper/plantillatfg.tex
 \mainmatter
 \chapter{Introducción}
 
+La gestión de multitudes y la seguridad en grandes eventos son preocupaciones crecientes en la planificación urbana y arquitectónica. Entender cómo se mueven las personas, cómo reaccionan ante emergencias y cómo interactúan entre sí es fundamental para diseñar espacios seguros y eficientes. 
+
+La simulación informática surge como una alternativa ética, económica y segura a los experimentos con personas reales, permitiendo probar escenarios hipotéticos de riesgo sin poner en peligro vidas humanas.
+
+Este trabajo surge de la asignatura de Sistemas Multi-Agente, con el objetivo de experimentar con el framework MESA en Python para crear un entorno de experimentación sobre multitudes. Se centra en el desarrollo y análisis del sistema, así como en la evaluación de su comportamiento bajo diferentes configuraciones y escenarios.
+
+\section{Alcance y Objetivos}
+ 
+El objetivo principal de este trabajo es desarrollar un entorno de simulación multi-agente (MAS) flexible utilizando la librería MESA en Python, que permita estudiar el impacto de los comportamientos individuales heterogéneos en la dinámica macroscópica de una multitud.
+
+\begin{itemize}
+    \item \textbf{Abstracción frente a Precisión Física}: Este proyecto \textbf{no pretende} crear una herramienta de ingeniería civil certificable bajo la norma ISO 20414 para validación legal de planos, ni replicar con exactitud milimétrica unidades físicas reales.
+    \item \textbf{Enfoque en Tendencias y Comportamiento}: El objetivo es simular tendencias emergentes y relaciones causales (p.ej. "¿Cómo afecta un 10\% de agentes agresivos al tiempo total de evacuación?") en lugar de predecir tiempos exactos de evacuación.
+    \item \textbf{Tipología de Agentes}: Se busca simular la variabilidad de las personas usando perfiles de agentes (\textit{Polite}, \textit{Aggressive}, \textit{Slow}) para observar la composición de la multitud altera el comportamiento de esta.
+\end{itemize}
+
+\section{Estructura del Documento}
+El documento se estructura en: estado del arte, donde se revisan las tecnologías actuales; análisis del problema, donde se define la estrategia de modelado; evaluación experimental, detallando métricas y escenarios; implementación técnica; y finalmente los resultados y conclusiones obtenidos.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                  SOTA                               %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Estado del Arte}
 
+La simulación de multitudes ha evolucionado de ser una disciplina académica minoritaria, a convertirse en una herramienta crítica para garantizar la seguridad, eficiencia y confort en infraestructuras modernas. 
+
+Este capítulo evalúa el estado del arte actual, dividiendo el análisis en los objetivos generales que siguen los desarrolladores de estos sistemas: los marcos regulatorios vigentes y las arquitecturas de micro-comportamiento utilizadas para modelar la navegación de agentes. 
+
+\section{Objetivos Globales de la Simulación}
+
+En el panorama actual de muchos sectores, la simulación de multitudes responde a regulaciones y consideraciones económicas, clasificándose principalmente en Diseño Basado en Prestaciones (Performance-Based Design) y Análisis de Nivel de Servicio.
+
+\subsection{Diseño Basado en Prestaciones (PBD) y Seguridad}
+Históricamente, los códigos de edificación eran toscos, dictando reglas rígidas sobre anchos de escalera y distancias de evacuación. El enfoque PBD permite diseños flexibles siempre que se demuestre, mediante simulación, que se cumplen los criterios de seguridad \cite{TODO_sfpe_handbook}.
+
+La métrica fundamental en PBD es la relación entre el Tiempo Disponible para la Evacuación Segura (ASET) y el Tiempo Requerido para la Evacuación Segura (RSET). Para que un diseño sea válido, debe cumplirse que:
+
+\begin{equation}
+    ASET > RSET + Margen\_de\_Seguridad
+\end{equation}
+
+Mientras que el ASET depende de la dinámica del fuego (toxicidad, calor, humo), el RSET es calculado por el simulador de multitudes y se compone de:
+\begin{itemize}
+    \item \textbf{Tiempo de Detección} y \textbf{Tiempo de Notificación}: Darse cuenta del peligro y alertar. 
+    \item \textbf{Tiempo de Pre-evacuación}: El intervalo entre la alarma y el primer movimiento del agente.
+    \item \textbf{Tiempo de Viaje}: La fase física del movimiento desde el origen hasta una zona segura. Este es el componente principal que modela el sistema desarrollado en este trabajo.
+\end{itemize}
+
+\subsection{Nivel de Servicio (LOS) y Confort}
+Para escenarios no urgentes sin peligros (más "Daily Life"), el objetivo principal es evaluar el confort peatonal. El estándar de referencia es la escala de Nivel de Servicio (LOS) propuesta por Fruin \cite{TODO_fruin}, que clasifica el flujo peatonal en seis niveles (A a F) basándose en la densidad local (personas/$m^2$):
+\begin{itemize}
+    \item \textbf{LOS A (Flujo Libre)}: Densidad baja ($< 0.31 p/m^2$), los peatones eligen libremente su velocidad.
+    \item \textbf{LOS F (Congestión)}: Densidad crítica ($> 2.17 p/m^2$), flujo interrumpido y contacto físico inevitable.
+\end{itemize}
+
+\section{Marcos Regulatorios y Validación}
+
+Para que un modelo de simulación sea considerado una herramienta válida y no un mero ejercicio teórico, debe adherirse a estándares de validación internacionales.
+
+\begin{itemize}
+    \item \textbf{ISO 20414:2020}: Esta norma establece protocolos rigurosos de verificación y validación para modelos de evacuación. Exige pruebas de componentes (p.ej., verificar que un agente se mueve a la velocidad asignada), verificación funcional (capacidad de flujo en puertas, contraflujo en pasillos) y validación cualitativa de comportamientos emergentes como la formación de arcos en las salidas \cite{TODO_iso_standard}.
+    \item \textbf{NIST y SFPE}: El National Institute of Standards and Technology y la Society of Fire Protection Engineers proporcionan los datos demográficos y de comportamiento estándar (velocidades según edad, dimensiones corporales) que deben utilizarse para configurar los agentes \cite{TODO_nist_tn}.
+\end{itemize}
+
+Dado el alcance académico de este trabajo, no se pretende certificar el modelo bajo ISO 20414, pero se han seguido sus directrices para asegurar una base sólida y reproducible.
+
+\section{Arquitecturas de Navegación y Micro-comportamientos}
+
+La lógica de un simulador de multitudes reside en sus algoritmos de navegación local y resolución de conflictos. Existen dos tipos principales en la literatura:
+
+\subsection{Modelos de Espacio Continuo}
+Dominantes en la industria de la animación y la robótica por su fidelidad visual.
+\begin{itemize}
+    \item \textbf{Social Force Model (SFM)}: Propuesto por Helbing \cite{TODO_helbing}, trata a los agentes como partículas sometidas a fuerzas newtonianas. Combina una fuerza impulsora hacia la meta con fuerzas repulsivas socio-psicológicas para mantener la distancia personal.
+    \item \textbf{Optimal Reciprocal Collision Avoidance (ORCA)}: Opera en el espacio de velocidades para garantizar matemáticamente trayectorias libres de colisiones \cite{TODO_orca}. Aunque eficiente, puede resultar en comportamientos demasiado 'perfectos' o robóticos.
+\end{itemize}
+
+\subsection{Modelos Discretos y Grid-Based}
+Los modelos basados en Autómatas Celulares (CA) o mallas discretas dividen el espacio en celdas. Son la base del sistema implementado en este TFG.
+El desafío principal es la resolución de conflictos (cuando dos agentes compiten por la misma celda). El estado del arte actual emplea \textit{Floor Fields} (campos de potencial) estáticos y dinámicos para guiar a los agentes, y utiliza teoría de juegos o heurísticas de "paciencia" para resolver bloqueos, superando las reglas simples de exclusión \cite{TODO_floor_fields}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                         ANÁLISIS DEL PROBLEMA                               %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Análisis del problema}
-- Utilidades
-- Métricas
 
-- Que queremos conseguir
-- Requisitos funcionales y no funcionales
+El desarrollo de simuladores de multitudes implica equilibrar el realismo físico con la complejidad computacional. Dado el objetivo de estudiar comportamientos emergentes en grandes grupos, se requiere una aproximación que permita simular cientos de entidades interactuando en tiempo real o cercano al tiempo real, sacrificando la precisión milimétrica en favor de la eficiencia estadística.
 
-flujos continuos de agentes...
+\section{Estrategia de Modelado: Discrete Grid-Based}
 
-You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
+Para cumplir con los requisitos identificados, se ha optado por un \textbf{Modelo Discreto basado en Rejilla (Grid-Based)}, implementado sobre el framework \textbf{MESA} en Python.
 
+Esta decisión de diseño se justifica bajo los siguientes criterios:
+\begin{enumerate}
+    \item \textbf{Espacio Discretizado}: El entorno se divide en celdas cuadradas, donde cada celda es un recurso atómico que puede contener un agente, una pared o una salida. Esto simplifica la detección de colisiones a una comprobación booleana de ocupación, eliminando los costosos cálculos de geometría continua.
+    \item \textbf{Tiempo Discretizado}: La simulación avanza en pasos discretos o "ticks". La velocidad se modela probabilísticamente: un agente con "mayor velocidad" simplemente tiene una mayor probabilidad estadística de moverse en un tick dado.
+    \item \textbf{Navegación}: La estructura de rejilla facilita la implementación directa de algoritmos de búsqueda de caminos en grafos como BFS y A*, esenciales para la planificación de rutas de los agentes.
+\end{enumerate}
 
+\section{Requisitos de Comportamiento: Tipología de Agentes}
 
-I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
+Un análisis del comportamiento de multitudes revela que la homogeneidad es una asunción falsa. Para obtener resultados significativos, el sistema debe ser capaz de modelar distintos perfiles que interactúen entre sí:
 
-- SOTA
-
-- Análisis del problema and what we want to achieve, 
-
-- How we are going to evaluate the system
-
-- Implementation 
-
-- Results 
-
-- Conclusion
-
-- Introducction
-
-- Abstract
-
-
-Every step you will be able to see the current state of the project and how it is implemented. 
-
-So, make your self a favor and read it all and write a resume to begin
-
-The code is at You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
-
-
-
-I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
-
-- SOTA
-
-- Análisis del problema and what we want to achieve, 
-
-- How we are going to evaluate the system
-
-- Implementation 
-
-- Results 
-
-- Conclusion
-
-- Introducction
-
-- Abstract
-
-
-Every step you will be able to see the current state of the project and how it is implemented. 
-
-The code is at SMA-MultiAgent-Based-Crowd-Simulation/app
-and the paper at SMA-MultiAgent-Based-Crowd-Simulation=paper/plantillatfg.tex
-
-
-
+\begin{itemize}
+    \item \textbf{Polite (Educados)}: Requeridos para modelar la cooperación. Deben ser capaces de ceder el paso y esperar, evitando conflictos activos.
+    \item \textbf{Aggressive (Agresivos)}: Requeridos para modelar la competencia y el pánico. Necesitan lógica para priorizar su movimiento sobre el de los demás, ocupando espacios agresivamente.
+    \item \textbf{Slow (Lentos)}: Requeridos para modelar la diversidad física. Actúan como obstáculos dinámicos, permitiendo estudiar el impacto de los usuarios más vulnerables en el flujo general
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                           EVALUACIÓN                            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Evaluación}
 
-- Métricas y cómo se van a medir
-- Qué experimentos se van a realizar
+La validación y análisis del modelo propuesto se realiza mediante una serie de experimentos controlados. En este capítulo se detallan las métricas diseñadas para cuantificar el comportamiento de la multitud y la metodología de los experimentos.
 
-### Metrics
-- Time / steps to evacuate last agent
-- Plot Density (Agents per area): how close to each other the agents are.
-- Flow. It should look like an inverted "U".
-	- Agents reaching destination per minute. 
-	- Also avg velocity. How many cells per tick they get closer to their final destination
-		- Asumimos que cada vez que se mueven es para acercarse a la salida.
-		- Por lo tanto solo calculamos la cantidad de celdas que se mueve por tick
-- ["total_agents", "polite_agents", "aggressive_agents", "slow_agents"],
-- ["evacuation_rate", "polite_evacuation_rate", "aggressive_evacuation_rate", "slow_evacuation_rate"],
-- ["macro_average_speed", "polite_macro_speed", "aggressive_macro_speed", "slow_macro_speed", "micro_average_speed"],
-- ["local_density", "dead_lock_factor"],
-- Check the code if needed ...
+\section{Métricas de Evaluación}
 
+Se han implementado monitores de datos (Data Collectors) que registran paso a paso el estado de la simulación. Aunque las unidades son abstractas (celdas, ticks), estas métricas son análogas a las utilizadas en estudios de seguridad profesional:
 
-# Experimentos
-- Evacuation rate (bottleneck)
-	- con cada vez más agentes 
-	- también speed vs Density
-- Faster is slower: SEATS, MALL, con aggressive 
-	- curve también con restpawn
-- Cómo afectan los agentes lentos
-- A* vs BFS: Saber qué la salida más cercana está en una dirección concreta
-- Exist matter: Cosas como: es que he entrado por ahí entonces salgo por ahí también xq está el coche.... en vez de salir por la más cercana
-- Reducir el número de salidas curva, cuantas salidas hacen falta como mínimo
-- Que pasa si en un sitio con X agentes, tardan x, pero ahora quitamos una fila / hacemos el pasillo más grande...
+\begin{itemize}
+    \item \textbf{Tiempo de Evacuación (Total Steps)}: Cantidad de ticks necesarios para que el último agente abandone el escenario. Representa el RSET (Required Safe Egress Time) y es la métrica principal de eficiencia.
+    \item \textbf{Tasa de Evacuación (Flow Rate)}: Cantidad de agentes que alcanzan una salida por tick. Permite visualizar la constancia del flujo e identificar cuellos de botella (caídas en el flow rate).
+    \item \textbf{Densidad Local y Crowding}: Se calcula para cada agente la ocupación de sus 8 celdas vecinas. El promedio global de esta métrica indica el nivel de congestión o hacinamiento del sistema.
+    \item \textbf{Factor de Bloqueo (Deadlock Factor)}: Métrica específica diseñada para este sistema discreto. Mide la proporción de agentes que \textit{intentaron} moverse pero no pudieron debido a que su celda objetivo estaba ocupada. Un alto factor de bloqueo indica fricción ineficiente o colapso del flujo.
+    \item \textbf{Velocidad Macro y Micro}:
+    \begin{itemize}
+        \item \textit{Velocidad Macro}: Velocidad promedio de todo el conjunto de agentes en el sistema.
+        \item \textit{Velocidad Micro}: Velocidad individual efectiva, ponderada por el tipo de agente.
+    \end{itemize}
+\end{itemize}
 
+\section{Diseño de Experimentos}
+
+Se han diseñado escenarios específicos para poner a prueba distintas hipótesis sobre la dinámica de multitudes. Aunque el sistema soporta simulación de flujo continuo, este estudio se centra exclusivamente en el \textbf{Escenario de Evacuación}, donde el objetivo es vaciar el recinto.
+
+\subsection{Escenarios Geométricos}
+Se utilizan cuatro topologías principales para variar la complejidad espacial:
+\begin{enumerate}
+    \item \textbf{Corridor (Pasillo)}: Espacio lineal y estrecho. Evalúa el flujo laminar y el efecto de arqueo en una salida simple.
+    \item \textbf{Mall (Centro Comercial)}: Espacio abierto con obstáculos (islas) distribuidos. Evalúa la capacidad de navegación alrededor de obstáculos y la distribución de salidas.
+    \item \textbf{Seats (Auditorio)}: Entorno altamente estructurado con filas estrechas. Evalúa el comportamiento en situaciones de alta densidad inicial y movilidad restringida (similar a un cine o teatro).
+    \item \textbf{Snake (Zig-Zag)}: Pasillo con giros forzados de 180 grados. Evalúa el impacto de la tortuosidad en la velocidad efectiva.
+\end{enumerate}
+
+\subsection{Variables Experimentales}
+En cada escenario, se modifican las siguientes variables independientes para observar su impacto en las métricas:
+\begin{itemize}
+    \item \textbf{Densidad Poblacional}: Se varía el número de agentes iniciales (de 10 a 300) para observar la transición de flujo libre a congestión.
+    \item \textbf{Composición (Polite vs Aggressive vs Slow)}: Se alteran los ratios de agentes para responder preguntas como: ¿Es una multitud cooperativa siempre más rápida? ¿Cómo penalizan los agentes lentos al grupo?
+    \item \textbf{Estrategia de Navegación (A* vs BFS)}: Se comparan algoritmos para ver si el cálculo de rutas óptimas (A*) compensa su coste computacional frente a la exploración simple (BFS).
+    \item \textbf{Configuración de Salidas}: Se prueba el impacto de asignar salidas fijas (preferencias) frente a dejar que los agentes elijan la más cercana (oportunismo).
+\end{itemize}
+ 
+% - We assume all exits are reachible
+
+% ### Ideas
+
+% - Different densities of people
+% - Different speeds of movement 
+% 	- give agents a "speed" variable: implemented as every tick they move if random() smaller than speed (So higher speed more likely to move each step)
+% -
+% ### Agent strategies
+% - Go in the direction of the exit
+% - Different types of agents: 
+% 	- polites: if they are going to ocupy a cell and other as well, they may look for other cells becuase others may have taken them already
+% 	- Agresive: if they are going to ocupy a cell and other as well, they will take it
+% 		- They have priority when moving so they take the empty places before (each tick aggressive move first, then polite and slow)
+% 		- In hallways they overtake other agents and even slow them down bc they put them selves in front 
+% 	- Slow: Same as polite but move slower
+% - Look one or two cells ahead / A* / BFS 
+% 	- for each cell, pre computed -> NOT LOOKING FOR AGENTS, just the scenario
+% 	- Agent scan the surroundings for cells with less value than the current and move to those
+% 	- It all occupied, they stay
+% 	- They flow followieng the 'gradient' going to smaller values
+% - **Rule:** If an agent has $>3$ neighbors (crowded), they have a an increasing chance of _not_ moving this turn (simulating shuffling feet/slow walking).
+% 	- Aggrssive get less affected by this
+% 	- Slow ones get a bit more affected
+% 	- Polites get more affected
+% - DeadLocks: When two flows of agents meet, if no strategies are implemented, they just get stuck because the cell with lower values are occupied by other agents. To solve this
+% 	- First they try the cell with the lowest value, if occupied try others with same value.
+% 	- If wont move, they stars incrasing a deadlock counter
+% 		- This counter then changes the behaevour of the agent like this
+% 		```python
+% 		if best_min_distance <= current_min_distance + self.dead_lock_factor * self.dead_lock_counter: # move...
+% 		```
+% 		- Each type of agent has a different dead_lock_factor.
+% 	- Then this counter is also increased if surrounding agents have a high counter so the deadlock situation state is spread along the agents to make them movo somewhere else and relax the lock
+% 	```python
+% 	if moved:
+%                     self.dead_lock_counter = max(0, self.dead_lock_counter - 2)
+%                 else:
+%                     # Increase own counter and add damped influence from neighbors
+%                     neighbor_influence = 0
+%                     if agent_neighbors:
+%                         avg_neighbor_deadlock = np.mean([a.dead_lock_counter for a in agent_neighbors])
+%                         neighbor_influence = 0.1 * (avg_neighbor_deadlock - self.dead_lock_counter)
+                    
+%                     self.dead_lock_counter += 1 + neighbor_influence
+%                     # Optional: cap to prevent unbounded growth
+%                     self.dead_lock_counter = min(self.dead_lock_counter, 30)
+% 	```
+% 	- If no more deadlock, this counter in rapidely decreased so agents beheave normal again
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                           TÉCNOLOGÍAS                             %
+%                           IMPLEMENTACIÓN                            %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Implementación}
-- Limitaciones
-- Herramientas y librerías
 
+El sistema ha sido implementado utilizando Python y la librería \textbf{Mesa}, un framework modular para el modelado basado en agentes. Esta elección permite una rápida prototipación, una fácil extensibilidad de comportamientos y la recolección eficiente de métricas estadísticas.
 
-# Implementation
-### Model
-- Evacuation simulations (single exit or more exits, agents go to the closest)
-- Mall simulation (Random people have to go to a certain random place / defined exit)
-	- Can do evacuation and crowd flux: when an agent reaches an exit, they respawn randomly
-- Corridor simulations (meeting flow of agents)
-- Seats / theater
-- Snake zigzag corridor
-- Different exits
-	- The grid has a different subgrid per each available exit. 
-	- This subgrids are like floor maps that guide the agent towars the exits  Depending on the simulation configuaration, this can be:
-		- To the closests if exits doesnt matter (smallest value of all sub grids)
-		- To a certain one simulating 'the one through the agent entered' ('my car is in that direction...') (smallest value of a certain grid)
-- We assume all exits are reachible
-
-### Ideas
-
-- Different densities of people
-- Different speeds of movement 
-	- give agents a "speed" variable: implemented as every tick they move if random() smaller than speed (So higher speed more likely to move each step)
--
-### Agent strategies
-- Go in the direction of the exit
-- Different types of agents: 
-	- polites: if they are going to ocupy a cell and other as well, they may look for other cells becuase others may have taken them already
-	- Agresive: if they are going to ocupy a cell and other as well, they will take it
-		- They have priority when moving so they take the empty places before (each tick aggressive move first, then polite and slow)
-		- In hallways they overtake other agents and even slow them down bc they put them selves in front 
-	- Slow: Same as polite but move slower
-- Look one or two cells ahead / A* / BFS 
-	- for each cell, pre computed -> NOT LOOKING FOR AGENTS, just the scenario
-	- Agent scan the surroundings for cells with less value than the current and move to those
-	- It all occupied, they stay
-	- They flow followieng the 'gradient' going to smaller values
-- **Rule:** If an agent has $>3$ neighbors (crowded), they have a an increasing chance of _not_ moving this turn (simulating shuffling feet/slow walking).
-	- Aggrssive get less affected by this
-	- Slow ones get a bit more affected
-	- Polites get more affected
-- DeadLocks: When two flows of agents meet, if no strategies are implemented, they just get stuck because the cell with lower values are occupied by other agents. To solve this
-	- First they try the cell with the lowest value, if occupied try others with same value.
-	- If wont move, they stars incrasing a deadlock counter
-		- This counter then changes the behaevour of the agent like this
-		```python
-		if best_min_distance <= current_min_distance + self.dead_lock_factor * self.dead_lock_counter: # move...
-		```
-		- Each type of agent has a different dead_lock_factor.
-	- Then this counter is also increased if surrounding agents have a high counter so the deadlock situation state is spread along the agents to make them movo somewhere else and relax the lock
-	```python
-	if moved:
-                    self.dead_lock_counter = max(0, self.dead_lock_counter - 2)
-                else:
-                    # Increase own counter and add damped influence from neighbors
-                    neighbor_influence = 0
-                    if agent_neighbors:
-                        avg_neighbor_deadlock = np.mean([a.dead_lock_counter for a in agent_neighbors])
-                        neighbor_influence = 0.1 * (avg_neighbor_deadlock - self.dead_lock_counter)
-                    
-                    self.dead_lock_counter += 1 + neighbor_influence
-                    # Optional: cap to prevent unbounded growth
-                    self.dead_lock_counter = min(self.dead_lock_counter, 30)
-	```
-	- If no more deadlock, this counter in rapidely decreased so agents beheave normal again
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Modelo}
+\section{Estructura del Modelo}
 En MESA, un modelo es una clase que hereda de \texttt{mesa.Model} y que contiene la lógica principal de la simulación. 
 
 En concreto, los modelos de MESA se encargaran principalmente de inicializar el entorno, crear los agentes, definir la función \texttt{Step} que mueve a los agentes y actualizar y controlar el estado del entorno.
@@ -432,37 +425,92 @@ En total, se han definido 6 escenarios diferentes, de los cuales nos interesan 4
 
 La cantidad de salidas en cada escenario se puede configurar, yendo desde una sola salida hasta una cierta cantidad definida para cada uno. El tamaño de estos se puede cambiar y los obstáculos y salidas se adaptan de forma dinámica al nuevo tamaño.
 
-\section{Cálculo de caminos}
+\section{Navegación y Cálculo de Caminos}
 
+Para optimizar el rendimiento y evitar costosas búsquedas de ruta (como A* completo) por cada agente en cada paso, se utiliza un enfoque de \textbf{Mapas de Distancia Estáticos (Floor Fields)}.
 
-\section{Agentes}
+Al inicio de la simulación, el entorno pre-calcula la distancia desde cada celda transitable hasta la salida más cercana utilizando un algoritmo de búsqueda en anchura (BFS). Esto genera un "mapa de calor" o gradiente donde cada celda contiene el coste de movimiento $d(c)$ hasta la meta.
+
+\begin{equation}
+    d(c_{actual}) > d(c_{siguiente})
+\end{equation}
+
+Los agentes simplemente deben inspeccionar sus celdas vecinas y escoger aquella con el valor $d$ más bajo, realizando un descenso de gradiente.
+
+\subsection{Diferenciación de Salidas}
+En escenarios complejos donde existen preferencias de salida (p.ej., "salir por donde entré"), el sistema genera múltiples mapas de distancia, uno por cada salida o grupo de salidas. Cada agente recibe una referencia al mapa que debe seguir, permitiendo flujos cruzados y comportamientos heterogéneos en la selección de rutas.
+
+\section{Lógica del Agente}
+
+La clase \texttt{CrowdAgent} encapsula la lógica de decisión. En cada paso de simulación (\texttt{step}), el agente ejecuta el siguiente ciclo:
+
+\subsection{1. Probabilidad de Movimiento}
+No todos los agentes se mueven en cada tick. La decisión de intentar moverse depende de dos factores:
+\begin{itemize}
+    \item \textbf{Velocidad Base}: Un valor intrínseco (p.ej., 0.8 para lentos, 1.0 para normales).
+    \item \textbf{Factor de Multitud (Crowd Slowdown)}: Si el agente está rodeado por muchos vecinos (densidad alta), su probabilidad de movimiento disminuye, simulando la fricción física y la necesidad de ajustar el paso en aglomeraciones.
+\end{itemize}
+
+\subsection{2. Resolución de Conflictos y Prioridad}
+Para evitar el "efecto tablero de ajedrez" donde los agentes se bloquean mutuamente en ciclos, se implementa un sistema de prioridades:
+\begin{itemize}
+    \item Los agentes \textbf{Agresivos} se procesan primero en la lista del Scheduler. Si ven un hueco libre que reduce su distancia a la salida, lo ocupan inmediatamente.
+    \item Los agentes \textbf{Polite} verifican si la celda objetivo está siendo disputada. Si detectan un conflicto potencial, tienen una probabilidad de "ceder el paso" (esperar) para evitar colisiones.
+\end{itemize}
+
+\subsection{3. Gestión de Bloqueos (Deadlock)}
+Se ha implementado un mecanismo de \textbf{Contador de Bloqueo} ($C_{dl}$) para situaciones donde el flujo se detiene (p.ej., dos flujos opuestos en un pasillo estrecho).
+\begin{itemize}
+    \item Si un agente intenta moverse pero no puede, incrementa su contador $C_{dl}$.
+    \item Cuando $C_{dl}$ supera un umbral, el agente entra en estado de "Pánico/Presión".
+    \item En este estado, el agente relaja sus reglas de movimiento: puede aceptar moverse a celdas que \textit{no} reducen la distancia óptima (movimiento lateral) o volverse temporalmente agresivo para forzar un hueco.rejilla
+    \item El estado de bloqueo se "contagia" localmente: los agentes perciben la frustración de sus vecinos, incrementando sus propios contadores, lo que cataliza una respuesta de grupo para desatascar la zona.
+\end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                               RESULTADOS DE LA SOLUCIón                     %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Resultado}
+\chapter{Resultados Experimentales}
+
+Los experimentos realizados arrojan conclusiones contraintuitivas respecto a la literatura clásica de "Faster-is-Slower". A continuación se detallan los hallazgos principales derivados de las simulaciones en los escenarios Corridor, Mall y Seats.
+
+\section{Impacto de la Agresividad}
+Contrario a la hipótesis inicial de que la competición excesiva ralentiza al grupo ("Faster-is-Slower"), nuestros resultados indican que \textbf{una mayor proporción de agentes agresivos no empeora el tiempo total de evacuación}. De hecho, en escenarios de alta densidad, la presencia de agentes agresivos tiende a mejorar ligeramente el flujo global.
+
+\begin{itemize}
+    \item \textbf{Mecanismo de Desatasco}: Los agentes agresivos actúan como "rompehielos". Al no titubear y ocupar agresivamente cualquier hueco libre, evitan que se formen estancamientos indecisos. Al salir rápidamente del sistema, liberan espacio para los agentes educados que vienen detrás.
+    \item \textbf{Orden de Salida}: Consistentemente, los agentes agresivos son los primeros en evacuar, seguidos por los educados.
+\end{itemize}
+ 
+\section{Impacto de los Agentes Lentos}
+La presencia de agentes lentos tiene un impacto desproporcionadamente negativo en la eficiencia del sistema. No solo tardan más en salir individualmente, sino que generan un efecto de "onda de choque" hacia atrás, obligando a los agentes rápidos (agresivos o educados) a reducir su velocidad efectiva al quedar atrapados detrás de ellos en pasillos estrechos o cuellos de botella.
+ 
+\section{La Ausencia del Efecto \textquotedbl Faster-is-Slower\textquotedbl}
+No se ha observado el fenómeno clásico donde el empuje excesivo reduce el flujo (bloqueo por arco). Esto sugiere que, en modelos discretos tipo grid sin física de fuerzas de contacto realistas, la "agresividad" (prioridad de turno) es computacionalmente más eficiente que la "cortesía" (espera y cesión de turno), ya que maximiza la utilización del espacio-tiempo disponible.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                 CONCLUSIONES                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Conclusiones}
-# Conclusions (Some, need more given experimets)
-- Aggressive: 
-	- In hallways they overtake other agents and even slow them down bc they put them selves in front
-	- They Move around more side to side since those are the free spaces and they try to move
-	- If there is an empty space, just one, the aggressive will take it
-	- Most of the time, the aggressive are the first to leave
+\chapter{Conclusiones y Trabajo Futuro}
 
-- Experiment with almost full grid
-- When two paths with similar length meet, the agents distribute them selves thanks to always looking for empty cells
-	- But if one of the gaps ends up being a bottle neck, many will stay stuck 
-- The agents get stuck when meeting directions
-- The agent avoid each other by moving to equally better cells
+\section{Conclusiones}
+El presente trabajo ha demostrado la viabilidad de utilizar simulaciones basadas en agentes sobre rejillas discretas (MESA) para el estudio de dinámicas de evacuación, ofreciendo un equilibrio entre complejidad computacional y riqueza de comportamiento.
 
+De los experimentos realizados, se extraen las siguientes conclusiones principales:
+\begin{enumerate}
+    \item \textbf{Eficiencia de la Agresividad}: En entornos discretos, los agentes que priorizan su propio movimiento (agresivos) tienden a evacuar más rápido y, paradójicamente, pueden acelerar el flujo global al resolver situaciones de bloqueo más rápidamente que los agentes cooperativos excesivamente cautos.
+    \item \textbf{Distribución Espacial}: Los agentes demuestran una capacidad emergente para distribuir el flujo en pasillos paralelos. Al buscar siempre celdas vacías que minimicen la distancia, se observa un "balanceo de carga" natural entre rutas alternativas, siempre que no existan cuellos de botella extremos.
+    \item \textbf{Limitaciones del Modelo Discreto}: Se observa que en situaciones de flujos opuestos (contraflujo) o convergencia en ángulos rectos, los agentes tienden a bloquearse (deadlock) con mayor facilidad que en modelos de fuerzas continuas, debido a la rigidez de la rejilla y la falta de "deslizamiento" físico.
+\end{enumerate}
 
-Mejoras futuras: Mejor sistema anti deadlock, adaptando los caminos cuando agentes bloqueados marcan una celda como en deadlock
+\section{Trabajo Futuro}
+Para superar las limitaciones identificadas, se proponen las siguientes líneas de investigación: 
+\begin{itemize}
+    \item \textbf{Sistema Anti-Deadlock Avanzado}: Implementar un sistema de "reputación de celda" donde, si un agente queda bloqueado mucho tiempo en una posición, marque esa celda como "costosa" en el mapa de navegación global, forzando a otros agentes a recalcular rutas (repathing) lejos de la congestión.
+    \item \textbf{Sub-Grid Movement}: Permitir coordenadas continuas dentro de las celdas discretas para suavizar el movimiento y permitir adelantamientos más realistas.
+\end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 %                                BIBLIOGRAFIA                                 %
