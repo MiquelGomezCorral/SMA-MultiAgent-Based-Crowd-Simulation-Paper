@@ -113,6 +113,47 @@
 
 
 \begin{abstract}[spanish]
+You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
+
+
+
+I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
+
+- SOTA
+- Análisis del problema and what we want to achieve, 
+- How we are going to evaluate the system
+- Implementation 
+- Results 
+- Conclusion
+- Introducction
+- Abstract
+
+
+Every step you will be able to see the current state of the project and how it is implemented. 
+
+So, make your self a favor and read it all and write a resume to begin
+
+The code is at You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
+
+
+
+I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
+
+- SOTA
+- How we are going to evaluate the system
+- Implementation 
+- Results 
+- Conclusion
+- Introducction
+- Abstract
+
+
+Every step you will be able to see the current state of the project and how it is implemented. 
+
+The code is at SMA-MultiAgent-Based-Crowd-Simulation/app
+and the paper at SMA-MultiAgent-Based-Crowd-Simulation=paper/plantillatfg.tex
+
+
 
 \end{abstract}
 
@@ -163,7 +204,63 @@
 
 flujos continuos de agentes...
 
-- 
+You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
+
+
+
+I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
+
+- SOTA
+
+- Análisis del problema and what we want to achieve, 
+
+- How we are going to evaluate the system
+
+- Implementation 
+
+- Results 
+
+- Conclusion
+
+- Introducction
+
+- Abstract
+
+
+Every step you will be able to see the current state of the project and how it is implemented. 
+
+So, make your self a favor and read it all and write a resume to begin
+
+The code is at You're an expert latex paper writer in spanish. You know how to take information and redact a paper in spanish following the given structure and way in which to write.
+
+
+
+I'll give you all the info and the way I writte papers, then you'll write thi paper following the structure and mimiquint the way I writt. You are going to write all the sections in the proper orther, not the article order:
+
+- SOTA
+
+- Análisis del problema and what we want to achieve, 
+
+- How we are going to evaluate the system
+
+- Implementation 
+
+- Results 
+
+- Conclusion
+
+- Introducction
+
+- Abstract
+
+
+Every step you will be able to see the current state of the project and how it is implemented. 
+
+The code is at SMA-MultiAgent-Based-Crowd-Simulation/app
+and the paper at SMA-MultiAgent-Based-Crowd-Simulation=paper/plantillatfg.tex
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                           EVALUACIÓN                            %
@@ -173,6 +270,34 @@ flujos continuos de agentes...
 - Métricas y cómo se van a medir
 - Qué experimentos se van a realizar
 
+### Metrics
+- Time / steps to evacuate last agent
+- Plot Density (Agents per area): how close to each other the agents are.
+- Flow. It should look like an inverted "U".
+	- Agents reaching destination per minute. 
+	- Also avg velocity. How many cells per tick they get closer to their final destination
+		- Asumimos que cada vez que se mueven es para acercarse a la salida.
+		- Por lo tanto solo calculamos la cantidad de celdas que se mueve por tick
+- ["total_agents", "polite_agents", "aggressive_agents", "slow_agents"],
+- ["evacuation_rate", "polite_evacuation_rate", "aggressive_evacuation_rate", "slow_evacuation_rate"],
+- ["macro_average_speed", "polite_macro_speed", "aggressive_macro_speed", "slow_macro_speed", "micro_average_speed"],
+- ["local_density", "dead_lock_factor"],
+- Check the code if needed ...
+
+
+# Experimentos
+- Evacuation rate (bottleneck)
+	- con cada vez más agentes 
+	- también speed vs Density
+- Faster is slower: SEATS, MALL, con aggressive 
+	- curve también con restpawn
+- Cómo afectan los agentes lentos
+- A* vs BFS: Saber qué la salida más cercana está en una dirección concreta
+- Exist matter: Cosas como: es que he entrado por ahí entonces salgo por ahí también xq está el coche.... en vez de salir por la más cercana
+- Reducir el número de salidas curva, cuantas salidas hacen falta como mínimo
+- Que pasa si en un sitio con X agentes, tardan x, pero ahora quitamos una fila / hacemos el pasillo más grande...
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                           TÉCNOLOGÍAS                             %
@@ -180,6 +305,70 @@ flujos continuos de agentes...
 \chapter{Implementación}
 - Limitaciones
 - Herramientas y librerías
+
+
+# Implementation
+### Model
+- Evacuation simulations (single exit or more exits, agents go to the closest)
+- Mall simulation (Random people have to go to a certain random place / defined exit)
+	- Can do evacuation and crowd flux: when an agent reaches an exit, they respawn randomly
+- Corridor simulations (meeting flow of agents)
+- Seats / theater
+- Snake zigzag corridor
+- Different exits
+	- The grid has a different subgrid per each available exit. 
+	- This subgrids are like floor maps that guide the agent towars the exits  Depending on the simulation configuaration, this can be:
+		- To the closests if exits doesnt matter (smallest value of all sub grids)
+		- To a certain one simulating 'the one through the agent entered' ('my car is in that direction...') (smallest value of a certain grid)
+- We assume all exits are reachible
+
+### Ideas
+
+- Different densities of people
+- Different speeds of movement 
+	- give agents a "speed" variable: implemented as every tick they move if random() smaller than speed (So higher speed more likely to move each step)
+-
+### Agent strategies
+- Go in the direction of the exit
+- Different types of agents: 
+	- polites: if they are going to ocupy a cell and other as well, they may look for other cells becuase others may have taken them already
+	- Agresive: if they are going to ocupy a cell and other as well, they will take it
+		- They have priority when moving so they take the empty places before (each tick aggressive move first, then polite and slow)
+		- In hallways they overtake other agents and even slow them down bc they put them selves in front 
+	- Slow: Same as polite but move slower
+- Look one or two cells ahead / A* / BFS 
+	- for each cell, pre computed -> NOT LOOKING FOR AGENTS, just the scenario
+	- Agent scan the surroundings for cells with less value than the current and move to those
+	- It all occupied, they stay
+	- They flow followieng the 'gradient' going to smaller values
+- **Rule:** If an agent has $>3$ neighbors (crowded), they have a an increasing chance of _not_ moving this turn (simulating shuffling feet/slow walking).
+	- Aggrssive get less affected by this
+	- Slow ones get a bit more affected
+	- Polites get more affected
+- DeadLocks: When two flows of agents meet, if no strategies are implemented, they just get stuck because the cell with lower values are occupied by other agents. To solve this
+	- First they try the cell with the lowest value, if occupied try others with same value.
+	- If wont move, they stars incrasing a deadlock counter
+		- This counter then changes the behaevour of the agent like this
+		```python
+		if best_min_distance <= current_min_distance + self.dead_lock_factor * self.dead_lock_counter: # move...
+		```
+		- Each type of agent has a different dead_lock_factor.
+	- Then this counter is also increased if surrounding agents have a high counter so the deadlock situation state is spread along the agents to make them movo somewhere else and relax the lock
+	```python
+	if moved:
+                    self.dead_lock_counter = max(0, self.dead_lock_counter - 2)
+                else:
+                    # Increase own counter and add damped influence from neighbors
+                    neighbor_influence = 0
+                    if agent_neighbors:
+                        avg_neighbor_deadlock = np.mean([a.dead_lock_counter for a in agent_neighbors])
+                        neighbor_influence = 0.1 * (avg_neighbor_deadlock - self.dead_lock_counter)
+                    
+                    self.dead_lock_counter += 1 + neighbor_influence
+                    # Optional: cap to prevent unbounded growth
+                    self.dead_lock_counter = min(self.dead_lock_counter, 30)
+	```
+	- If no more deadlock, this counter in rapidely decreased so agents beheave normal again
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Modelo}
@@ -259,9 +448,21 @@ La cantidad de salidas en cada escenario se puede configurar, yendo desde una so
 %                                 CONCLUSIONES                                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Conclusiones}
+# Conclusions (Some, need more given experimets)
+- Aggressive: 
+	- In hallways they overtake other agents and even slow them down bc they put them selves in front
+	- They Move around more side to side since those are the free spaces and they try to move
+	- If there is an empty space, just one, the aggressive will take it
+	- Most of the time, the aggressive are the first to leave
+
+- Experiment with almost full grid
+- When two paths with similar length meet, the agents distribute them selves thanks to always looking for empty cells
+	- But if one of the gaps ends up being a bottle neck, many will stay stuck 
+- The agents get stuck when meeting directions
+- The agent avoid each other by moving to equally better cells
 
 
-Mejoras: Mejor sistema anti deadlock, adaptando los caminos cuando agentes bloqueados marcan una celda como en deadlock
+Mejoras futuras: Mejor sistema anti deadlock, adaptando los caminos cuando agentes bloqueados marcan una celda como en deadlock
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
 %                                BIBLIOGRAFIA                                 %
