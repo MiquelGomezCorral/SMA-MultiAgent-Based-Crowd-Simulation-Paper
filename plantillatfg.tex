@@ -418,7 +418,6 @@ Ahora, este aspecto no se ha explorado en profundidad en este trabajo por limita
 Por ejemplo, se pueden re hacer los experimentos mencionados anteriormente pero con la opción de \textit{reaparición de agentes} activada. Luego, tras una cantidad decente te steps, el flujo se estabiliza y se pueden recoger métricas como la densidad media, velocidad media y ritmo de evacuación. 
 
 Durante el desarrollo, también se ha visto que estos sistemas tienden a oscilar, creando tapones de agentes que luego se disipan, y que pueden ser estudiados con las métricas implementadas.
-
  
 % - We assume all exits are reachible
 
@@ -476,20 +475,22 @@ Durante el desarrollo, también se ha visto que estos sistemas tienden a oscilar
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Implementación}
 
-El sistema ha sido implementado utilizando Python y la librería \textbf{MESA}, como se ha mencionado, es un framework modular para el modelado basado en agentes y es bastante popular porque permite una rápida prototipación, una fácil extensibilidad de comportamientos y la recolección eficiente de métricas estadísticas.
+El sistema ha sido implementado utilizando Python y la librería \textbf{MESA}. Como se ha mencionado, MESA es un framework modular para el modelado basado en agentes y es bastante popular porque permite una rápida prototipación, una fácil extensibilidad de comportamientos y la recolección eficiente de métricas estadísticas.
 
 Los principales componentes que hay que definir en MESA son los mencionados hasta ahora: el modelo (entorno) y los agentes (comportamiento). Además, MESA ofrece herramientas para la visualización y recolección de datos que se han aprovechado en este trabajo.
 
 \section{Visualización y Recolección de Datos}
 MESA incluye un módulo de visualización basado en navegador web que permite observar la simulación en tiempo real. 
 
-Aprovechamos esta funcionalidad para crear una interfaz interactiva donde se pueden ajustar parámetros como la densidad de agentes, la proporción de tipos de agentes y las características del entorno antes de iniciar la simulación.
+Aprovechamos esta funcionalidad para crear una interfaz interactiva donde se pueden ajustar parámetros como la cantidad de agentes, la proporción de tipos de agentes o las características del entorno antes de iniciar la simulación entre otros.
 
-Además, para hacer visibles los agentes, colearemos diferentes colores según su tipo: los agentes \textit{Polite} serán de color azul, los \textit{Aggressive} rojos y los \textit{Slow} verdes si están en modo evacuación yendo a la salida más cercana. Si tienen una salida favorita asignada, se usarán colores específicos para cada una. Por último, los obstáculos se representarán en gris oscuro. 
+Además, para hacer visibles los agentes, coloreamos de diferentes tonos de ciertos colores y formas según su tipo: los agentes \textit{Polite} serán rombos de color azul, los \textit{Aggressive} serán triángulos rojos y los \textit{Slow} círculos verdes. También, los obstáculos y las salidas serán cuadrados, los obstáculos se representarán en gris oscuro y las salidas cada una de un color. En las simulaciones en las que los agenges tengan una salida favorita, se usarán los colores de cada una en lugar de los colores por defecto.
 
 Haremos gráficas en tiempo real de las métricas más importantes, una tabla resumen de los datos actuales de la simulación y una visualización del entorno con la distancia a la salida más cercana de cada celda.
 
 En la Figura \ref{fig:simulation_screenshots} se pueden ver capturas de pantalla del sistema de simulación final con ejemplos de lo mencionado. 
+
+
 
 \section{Estructura del Modelo}
 En MESA, un modelo es una clase que hereda de \texttt{mesa.Model} y que contiene la lógica principal de la simulación. 
@@ -560,7 +561,7 @@ Se ha implementado un mecanismo de \textbf{Contador de Bloqueo} ($C_{dl}$) para 
 \begin{itemize}
     \item Si un agente intenta moverse pero no puede, incrementa su contador $C_{dl}$.
     \item Cuando $C_{dl}$ supera un umbral, el agente entra en estado de "Pánico/Presión".
-    \item En este estado, el agente relaja sus reglas de movimiento: puede aceptar moverse a celdas que \textit{no} reducen la distancia óptima (movimiento lateral) o volverse temporalmente agresivo para forzar un hueco.rejilla
+    \item En este estado, el agente relaja sus reglas de movimiento: puede aceptar moverse a celdas que \textit{no} reducen la distancia óptima (movimiento lateral) o volverse temporalmente agresivo para forzar un hueco rejilla
     \item El estado de bloqueo se "contagia" localmente: los agentes perciben la frustración de sus vecinos, incrementando sus propios contadores, lo que cataliza una respuesta de grupo para desatascar la zona.
 \end{itemize}
 
