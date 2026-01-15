@@ -573,7 +573,7 @@ En nuestro caso, el entorno será una malla bidimensional que representa los esp
 
 Esta malla define por defecto una serie de funcionalidades que facilitan la gestión del espacio y la interacción entre agentes. Usaremos una malla de tipo \texttt{OrthogonalMooreGrid}, la cual permite a los agentes moverse en las cuatro direcciones cardinales y en las cuatro diagonales. No permitiremos que más de un agente ocupe la misma celda al mismo tiempo, y haremos que los obstáculos y las salidas ocupen celdas enteras en la malla.
 
-Se define un ancho y alto para la malla, y según el tipo de escenario seleccionado para la simulación, se generarán los obstáculos y las salidas en posiciones y formas específicas. Luego, los agentes aparecerán en el resto de celdas disponibles de forma aleatoria.
+Se define un ancho y alto para la malla, y según el tipo de escenario seleccionado para la simulación, se generarán los obstáculos y las salidas en posiciones y formas específicas adaptándose al tamaño definido. Luego, los agentes aparecerán en el resto de celdas disponibles de forma aleatoria.
 
 Se han implementado 6 tipos de escenarios distintos (OPEN, MALL, CORRIDOR, SEATS, SNAKE y RANDOM), cada uno con características topológicas específicas que permiten evaluar diferentes aspectos del comportamiento de multitudes, como se puede observar en la Figura \ref{fig:all_scenarios}.
 
@@ -581,45 +581,61 @@ Se han implementado 6 tipos de escenarios distintos (OPEN, MALL, CORRIDOR, SEATS
 
 \section{Navegación y Cálculo de Caminos}
 
-Para optimizar el rendimiento y evitar costosas búsquedas de ruta (como A* completo) por cada agente en cada paso, se utiliza un enfoque de \textbf{Mapas de Distancia Estáticos (Floor Fields)}.
+Para optimizar el rendimiento y evitar costosas búsquedas de ruta por cada agente en cada paso, se utiliza un enfoque de \textbf{Mapas de Distancia Estáticos (Floor Fields)}.
 
-Al inicio de la simulación, el entorno pre-calcula la distancia desde cada celda transitable hasta la salida más cercana utilizando un algoritmo de búsqueda en anchura (BFS). Esto genera un "mapa de calor" o gradiente donde cada celda contiene el coste de movimiento $d(c)$ hasta la meta.
+Al inicio de la simulación, el entorno pre-calcula la distancia desde cada celda transitable hasta la salida más cercana utilizando un algoritmo de búsqueda en anchura (BFS) o uno con heurística A*. Esto genera un 'mapa de calor' o gradiente donde cada celda contiene el coste de movimiento $d(c)$ hasta la meta.
 
 \begin{equation}
-    d(c_{actual}) > d(c_{siguiente})
+    d(c_{actual}) >= d(c_{siguiente})
 \end{equation}
 
-Los agentes simplemente deben inspeccionar sus celdas vecinas y escoger aquella con el valor $d$ más bajo, realizando un descenso de gradiente.
+Los agentes simplemente deben inspeccionar sus celdas vecinas y escoger aquella con el valor $d$ más bajo, realizando un descenso de gradiente. 
+
+No se requiere que los agentes recalculen rutas dinámicamente, lo que reduce significativamente la carga computacional y permite simular grandes multitudes en tiempo real. Y mencionar que se hace $>=$ y no solo $>$ para permitir movimientos laterales en caso de deadlocks.
+
+\subsection{Heurística en A*}
+Ya que el movimiente de los agentes permite movimientos diagonales, la heurística utilizada en A* es la \textbf{Distancia Euclidiana}, que calcula el coste estimado con una pequeña optimización para evitar agentes atascados en esquinas:
+$$
+H(current, goal) = 0.5\times \sqrt{(x_{goal} - x_{current})^2 + (y_{goal} - y_{current})^2}
+$$
+
+Ese factor de 0.5 se ha añadido para reducir la influencia de la heurística y favorecer caminos más directos en lugar de diagonales excesivas que podrían llevar a bloqueos. Se ha llegado al valor tras experimentación.
 
 \subsection{Diferenciación de Salidas}
-En escenarios complejos donde existen preferencias de salida (p.ej., "salir por donde entré"), el sistema genera múltiples mapas de distancia, uno por cada salida o grupo de salidas. Cada agente recibe una referencia al mapa que debe seguir, permitiendo flujos cruzados y comportamientos heterogéneos en la selección de rutas.
+En escenarios complejos donde existen preferencias de salida (p.ej., "salir por donde entré"), el sistema genera múltiples mapas de distancia, uno por cada salida. Cada agente recibe una referencia al mapa que debe seguir, permitiendo flujos cruzados y comportamientos heterogéneos en la selección de rutas.
+
+En caso de ir a la más cercana, el agente recibe todos los mapas y evalúa el mínimo en cada paso.
 
 \section{Lógica del Agente}
 
-La clase \texttt{CrowdAgent} encapsula la lógica de decisión. En cada paso de simulación (\texttt{step}), el agente ejecuta el siguiente ciclo:
+La clase \texttt{CrowdAgent} desciende de la clase \texttt{mesa.Agent} y encapsula la lógica de decisión. En cada paso de simulación (\texttt{step}), el agente ejecuta el siguiente ciclo:
 
 \subsection{1. Probabilidad de Movimiento}
 No todos los agentes se mueven en cada tick. La decisión de intentar moverse depende de dos factores:
 \begin{itemize}
-    \item \textbf{Velocidad Base}: Un valor intrínseco (p.ej., 0.8 para lentos, 1.0 para normales).
-    \item \textbf{Factor de Multitud (Crowd Slowdown)}: Si el agente está rodeado por muchos vecinos (densidad alta), su probabilidad de movimiento disminuye, simulando la fricción física y la necesidad de ajustar el paso en aglomeraciones.
+    \item \textbf{Velocidad Base}: Un valor aleatorio que se elige para cada agente entre un rango concreto paca cada tipo de agente. Este valor representa la probabilidad base de que el agente intente moverse en cada tick. Los agentes \textit{Slow} tendrán una probabilidad base menor que los \textit{Polite} y estos a su vez menor que los \textit{Aggressive}.
+    \item \textbf{Factor de Multitud (Crowd Slowdown)}: Si el agente está rodeado por muchos vecinos (densidad alta), su probabilidad de movimiento disminuye, simulando la fricción física y la necesidad de ajustar el paso en aglomeraciones. Este efecto es más pronunciado en agentes \textit{Polite} y menos en \textit{Aggressive} y en los \textit{Slow}.
 \end{itemize}
 
-\subsection{2. Resolución de Conflictos y Prioridad}
-Para evitar el "efecto tablero de ajedrez" donde los agentes se bloquean mutuamente en ciclos, se implementa un sistema de prioridades:
-\begin{itemize}
-    \item Los agentes \textbf{Agresivos} se procesan primero en la lista del Scheduler. Si ven un hueco libre que reduce su distancia a la salida, lo ocupan inmediatamente.
-    \item Los agentes \textbf{Polite} verifican si la celda objetivo está siendo disputada. Si detectan un conflicto potencial, tienen una probabilidad de "ceder el paso" (esperar) para evitar colisiones.
-\end{itemize}
+\subsection{2. Resolución Prioridad}
+Para crear la ilusión de diferentes niveles de agresividad, se implementa una lógica simple en la que, para cada step, primero los agentes \textit{Aggressive} se moverán a las celdas que deseen ocupar, seguidos por los \textit{Polite} y los \textit{Slow} en orden aleatorio.
 
 \subsection{3. Gestión de Bloqueos (Deadlock)}
 Se ha implementado un mecanismo de \textbf{Contador de Bloqueo} ($C_{dl}$) para situaciones donde el flujo se detiene (p.ej., dos flujos opuestos en un pasillo estrecho).
 \begin{itemize}
     \item Si un agente intenta moverse pero no puede, incrementa su contador $C_{dl}$.
     \item Cuando $C_{dl}$ supera un umbral, el agente entra en estado de "Pánico/Presión".
-    \item En este estado, el agente relaja sus reglas de movimiento: puede aceptar moverse a celdas que \textit{no} reducen la distancia óptima (movimiento lateral) o volverse temporalmente agresivo para forzar un hueco rejilla
+    \item En este estado, el agente relaja sus reglas de movimiento: puede aceptar moverse a celdas que \textit{no} reducen la distancia óptima y puede incluso retroceder o moverse lateralmente para aliviar la congestión, dejando pasar a otros agentes.
     \item El estado de bloqueo se "contagia" localmente: los agentes perciben la frustración de sus vecinos, incrementando sus propios contadores, lo que cataliza una respuesta de grupo para desatascar la zona.
 \end{itemize}
+
+Cuando la congestión se resuelve, el contador se reduce rápidamente, permitiendo que el agente vuelva a su comportamiento normal.
+
+\section{Flujo continuo}
+
+Como se ha mencionado, el sistema tiene la capacidad técnica de simular flujos continuos de personas en situaciones no urgentes, pero este aspecto queda completamente fuera del alcance del presente trabajo.
+
+Únicamente mencionar que su implementación es sencilla: se activa la opción de \textit{reaparición de agentes} en el modelo, de forma que cuando un agente evacua, se crea uno nuevo en una posición aleatoria del entorno.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
