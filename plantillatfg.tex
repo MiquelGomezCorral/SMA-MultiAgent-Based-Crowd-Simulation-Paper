@@ -222,6 +222,8 @@ Cualquier persona interesada puede clonar el repositorio del proyecto, instalar 
 El documento se estructura en: estado del arte, donde se revisan las tecnologías actuales; análisis del problema, donde se define la estrategia de modelado; evaluación experimental, detallando métricas y escenarios; implementación técnica; y finalmente los resultados y conclusiones obtenidos.
 
 
+El desarrollo del código y la redacción de este trabajo se ha realizado totalmente a mano. Se ha hecho uso de asistentes como Copilot para la revisión y análisis de resultados, pero sin generar ningún contenido automáticamente. La única excepción es la generación automática gráficas y tablas a partir de los datos experimentales, pero siempre bajo la supervisión y control de los autores.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                  SOTA                               %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -400,16 +402,6 @@ En total, se han definido 6 escenarios diferentes \ref{fig:all_scenarios}, de lo
 \end{itemize}
 
 La cantidad de salidas en cada escenario se puede configurar, yendo desde una sola salida hasta una cierta cantidad definida para cada uno. El tamaño de estos se puede cambiar y los obstáculos y salidas se adaptan de forma dinámica al nuevo tamaño.
-
-\subsection{Variables Experimentales}
-En cada escenario, se modifican las siguientes variables independientes para observar su impacto en las métricas:
-\begin{itemize}
-    \item \textbf{Densidad Poblacional}: Se varía el número de agentes iniciales (de 10 a 300) para observar la transición de flujo libre a congestión.
-    \item \textbf{Composición (Polite vs Aggressive vs Slow)}: Se alteran los ratios de agentes para responder preguntas como: ¿Es una multitud cooperativa siempre más rápida? ¿Cómo penalizan los agentes lentos al grupo?
-    \item \textbf{Estrategia de Navegación (A* vs BFS)}: Se comparan algoritmos para ver si el cálculo de rutas óptimas (A*) compensa su coste computacional frente a la simple (BFS).
-    \item \textbf{Configuración de Salidas}: Se prueba el impacto de asignar salidas fijas (preferencias) frente a dejar que los agentes elijan la más cercana (oportunismo).
-\end{itemize}
-
 \begin{figure}[H]
     \centering
     \begin{tabular}{cc}
@@ -426,6 +418,96 @@ En cada escenario, se modifican las siguientes variables independientes para obs
     \caption{Escenarios implementados en el sistema. Cada uno presenta diferentes configuraciones de obstáculos y salidas para evaluar distintos aspectos del comportamiento de multitudes.}
     \label{fig:all_scenarios}
 \end{figure}
+\subsection{Variables Experimentales}
+En cada escenario, se modifican las siguientes variables independientes para observar su impacto en las métricas:
+\begin{itemize}
+    \item \textbf{Densidad Poblacional}: Se varía el número de agentes iniciales (de 10 a 300) para observar la transición de flujo libre a congestión.
+    \item \textbf{Composición (Polite vs Aggressive vs Slow)}: Se alteran los ratios de agentes para responder preguntas como: ¿Es una multitud cooperativa siempre más rápida? ¿Cómo penalizan los agentes lentos al grupo?
+    \item \textbf{Estrategia de Navegación (A* vs BFS)}: Se comparan algoritmos para ver si el cálculo de rutas óptimas (A*) compensa su coste computacional frente a la simple (BFS).
+    \item \textbf{Configuración de Salidas}: Se prueba el impacto de asignar salidas fijas (preferencias) frente a dejar que los agentes elijan la más cercana (oportunismo).
+\end{itemize}
+
+\section{Configuración y Protocolo Experimental}
+\label{sec:configuracion_experimental}
+
+Para garantizar la reproducibilidad de los resultados, a continuación se detallan los valores por defecto utilizados en todas las simulaciones, así como las modificaciones específicas realizadas para cada conjunto de experimentos.
+
+\subsection{Valores por Defecto}
+
+Salvo que se especifique lo contrario en la descripción de cada experimento, las simulaciones parten de una configuración base establecida (Tabla \ref{tab:default_config}). Cada simulación se repite \textbf{1000 veces} para asegurar la robustez estadística de los datos.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Parámetro} & \textbf{Valor por Defecto} \\
+\hline
+\textbf{Dimensiones de la Malla} & 30 x 30 celdas \\
+\hline
+\textbf{Población Inicial} & 125 agentes \\
+\hline
+\textbf{Algoritmo de Pathfinding} & A* (con heurística Euclidiana) \\
+\hline
+\textbf{Escenario Base} & MALL \\
+\hline
+\textbf{Número de Salidas} & 4 salidas (distribuidas en los bordes) \\
+\hline
+\textbf{Comportamiento de Salida} & Oportunista (Salida más cercana) \\
+\hline
+\textbf{Reaparición} & Desactivada (Respawn = False) \\
+\hline
+\textbf{Distribución de Agentes} & \textbf{70\% Polite} (Educados), \textbf{20\% Aggressive} (Agresivos), \textbf{10\% Slow} (Lentos) \\
+\hline
+\end{tabularx}
+\caption{Configuración base para las simulaciones}
+\label{tab:default_config}
+\end{table}
+
+\subsection{Definición de Experimentos}
+
+Se han llevado a cabo las siguientes baterías de experimentos, modificando parámetros específicos respecto a la configuración base:
+
+\begin{enumerate}
+    \item \textbf{Impacto de la Densidad (Puro y Mixto)}:
+    \begin{itemize}
+        \item \textbf{Objetivo}: Evaluar la saturación en distintos escenarios.
+        \item \textbf{Variaciones}: Población [10, 25, 50, 75, 100, 125, 150, 175, 200, 300].
+        \item \textbf{Casos}: Se ejecutan dos series, una con población 100\% Polite y otra con la distribución mixta por defecto (70/20/10).
+    \end{itemize}
+    
+    \item \textbf{Impacto de la Agresividad}:
+    \begin{itemize}
+        \item \textbf{Escenario Focal}: SEATS (Entorno estructurado).
+        \item \textbf{Variaciones}: Ratio de agentes agresivos [0\%, 10\%, 25\%, 50\%, 80\%, 100\%] manteniendo el resto como Polite.
+        \item \textbf{Densidades Probadas}: 125, 200 y 300 agentes.
+    \end{itemize}
+    
+    \item \textbf{Impacto de Agentes Lentos}:
+    \begin{itemize}
+        \item \textbf{Escenario Focal}: SEATS.
+        \item \textbf{Variaciones}: Ratio de agentes lentos [0\%, 10\%, 25\%, 50\%, 80\%, 100\%] manteniendo el resto como Polite.
+        \item \textbf{Densidades Probadas}: 125, 200 y 300 agentes.
+    \end{itemize}
+    
+    \item \textbf{Comparativa de Pathfinding (A* vs BFS)}:
+    \begin{itemize}
+        \item \textbf{Alcance}: Todos los escenarios.
+        \item \textbf{Variación}: Se alterna el algoritmo de navegación entre A* y BFS manteniendo la población mixta por defecto.
+    \end{itemize}
+    
+    \item \textbf{Preferencia de Salidas}:
+    \begin{itemize}
+        \item \textbf{Alcance}: Todos los escenarios.
+        \item \textbf{Variación}: Activación del parámetro \textit{differentiate\_exits}, forzando a los agentes a tener una salida preasignada aleatoria en lugar de la óptima.
+    \end{itemize}
+    
+    \item \textbf{Número de Salidas}:
+    \begin{itemize}
+        \item \textbf{Variación}: Se modifica el número de salidas disponibles $N$ en función de la geometría del escenario (Mall/Seats: 1-8, Corridor: 1-4, Snake: 1-2).
+    \end{itemize}
+\end{enumerate}
+
+
 
 \clearpage
 
@@ -639,25 +721,335 @@ Como se ha mencionado, el sistema tiene la capacidad técnica de simular flujos 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                               RESULTADOS DE LA SOLUCIón              Cuando este contador supera un umbral, el agente entra en un estado especial donde relaja sus reglas de movimiento, permitiendo movimientos laterales o incluso retroceder para aliviar la congestión.       %
+%                               RESULTADOS EXPERIMENTALES                      %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Resultados Experimentales}
 
-Los experimentos realizados arrojan conclusiones contraintuitivas respecto a la literatura clásica de "Faster-is-Slower". A continuación se detallan los hallazgos principales derivados de las simulaciones en los escenarios Corridor, Mall y Seats.
+Este capítulo presenta un análisis de los experimentos de simulación realizados para evaluar el impacto de diversos parámetros sobre la eficiencia de evacuación y la dinámica de multitudes. El análisis se ha llevado a cabo siguiendo el protocolo y la configuración experimental detallados en la Sección \ref{sec:configuracion_experimental}.
 
-\section{Impacto de la Agresividad}
-Contrario a la hipótesis inicial de que la competición excesiva ralentiza al grupo ("Faster-is-Slower"), nuestros resultados indican que \textbf{una mayor proporción de agentes agresivos no empeora el tiempo total de evacuación}. De hecho, en escenarios de alta densidad, la presencia de agentes agresivos tiende a mejorar ligeramente el flujo global.
+El análisis se estructura en dos partes complementarias:
+
+\begin{enumerate}
+    \item \textbf{Análisis de Resultados Totales}: Evaluación de los tiempos totales de evacuación y métricas de comportamiento promedio a lo largo de toda la simulación.
+    \item \textbf{Análisis de Evolución Temporal}: Estudio de cómo las métricas clave evolucionan durante el transcurso de la evacuación, revelando patrones de congestión y dinámicas de flujo.
+\end{enumerate}
+
+Las simulaciones se han centrado en recopilar los \textbf{Steps} totales requeridos para que todos los agentes evacuen, junto con \textbf{Métricas de Comportamiento} detalladas (velocidad, densidad, bloqueo, flujo) registradas en cada paso de la simulación para entender tanto la \textit{eficiencia final} como la \textit{calidad del proceso} de evacuación.
+
+Las siguientes variables han sido analizadas:
+\begin{enumerate}
+    \item \textbf{Densidad de Agentes}: Impacto del aumento del tamaño de la multitud (10 a 300 agentes).
+    \item \textbf{Comportamiento Agresivo}: Efecto de la competitividad de los agentes (0\% a 100\% agresivos).
+    \item \textbf{Agentes Lentos}: Impacto de agentes con movilidad reducida (0\% a 100\% lentos).
+    \item \textbf{Algoritmos de Pathfinding}: Comparación entre A* (con heurística) y BFS (sin heurística).
+    \item \textbf{Preferencias de Salida}: Impacto de la selección de salida pre-asignada vs. salida más cercana (lo que llaman oportunista).
+    \item \textbf{Número de Salidas}: Ganancias de eficiencia con múltiples salida (1 al máximo que acepte el escenario).
+    \item \textbf{Ancho de Salida}: Impacto de ampliar los cuellos de botella (multiplicador de ancho de pasillos de 1 a 4 celdas).
+\end{enumerate}
+
+Los experimentos se han ejecutado en los cuatro escenarios principales: \textbf{Corridor}, \textbf{Mall}, \textbf{Seats} y \textbf{Snake}, realizando múltiples iteraciones (1000 repeticiones por configuración) para garantizar la significancia estadística de los resultados.
+
+
+\section{Análisis de Resultados Agregados}
+
+Esta sección examina los \textbf{resultados finales} de las simulaciones, analizando tiempos totales de evacuación y promedios de métricas de comportamiento a lo largo de toda la ejecución.
+
+\subsection{Densidad de Agentes}
+
+\textbf{Observación}: El tiempo de evacuación aumenta de manera no lineal con el número de agentes, mostrando una relación que indica saturación del sistema.
+
+\textbf{Resultados}: Incrementar la población de 10 a 300 agentes causa aumentos en el tiempo de evacuación que varían significativamente según el escenario. En particular, el aumento en steps promedio es:
+\begin{itemize}
+    \item \textbf{Corridor}: +80\% de steps (de $\sim$50 a $\sim$90 steps)
+    \item \textbf{Mall}: +150\% de steps (de $\sim$45 a $\sim$113 steps)
+    \item \textbf{Snake}: +200\% de steps (de $\sim$60 a $\sim$180 steps)
+    \item \textbf{Seats}: +370\% de steps (de $\sim$50 a $\sim$235 steps)
+\end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{images/plot_n_agents.png}
+	\caption{Impacto del número de agentes en el tiempo total de evacuación en diferentes escenarios. Se observa un aumento no lineal, especialmente pronunciado en entornos con obstáculos internos (Seats).}
+	\label{fig:plot_n_agents}
+\end{figure}
+
+\textbf{Interpretación}: Los entornos altamente estructurados con obstáculos internos (Seats) son extremadamente sensibles a la densidad poblacional. La presencia de filas de asientos crea múltiples cuellos de botella internos que se saturan rápidamente. En contraste, los espacios con flujo más directo (Corridor) manejan el incremento de carga de manera más lineal, permitiendo que los agentes se distribuyan mejor a lo largo de los pasillos.
+
+La métrica de \textbf{densidad local promedio} confirma esta observación, aumentando de 0.18 vecinos (10 agentes) a 2.10 vecinos (300 agentes), lo que representa un factor multiplicativo de más de 11x en la percepción de hacinamiento individual.
+
+\subsection{Comportamiento Agresivo}
+
+\textbf{Observación}: Contraintuitivamente, la agresividad puede mejorar la eficiencia global del sistema en modelos discretos.
+
+\textbf{Resultados}: En el escenario \textbf{Seats} con 200 agentes:
+\begin{itemize}
+    \item 0\% agresivos (solo educados): 238 steps promedio
+    \item 25\% agresivos: 225 steps (-5.5\%)
+    \item 50\% agresivos: 215 steps (-9.7\%)
+    \item 100\% agresivos: 205 steps (-13.9\%)
+\end{itemize}
+
+La tasa de evacuación aumenta de 2.40 agentes/step (educados) a 2.76 agentes/step (agresivos), un incremento del 15\%. Más sorprendente aún, el \textbf{factor de bloqueo} disminuye del 0.73 (educados) al 0.61 (agresivos), una reducción del 16\%.
+
+\textbf{Interpretación}: Los agentes agresivos actúan como \textit{catalizadores de flujo} en situaciones de congestión. Al priorizar su propio movimiento y ocupar espacios disponibles sin vacilación, resuelven situaciones de bloqueo mutuo más rápidamente que los agentes educados, que tienden a esperar y ceder el paso. Hay que tener en cuenta que estos agentes están 'bufados', ya que tienen prioridad de movimiento y son menos afectados por la densidad local.
+
+Este resultado desafía la intuición común de que la cooperación siempre optimiza el flujo en multitudes, demostrando que en modelos discretos la decisión rápida supera a la cortesía excesiva.
+
+\subsection{Agentes Lentos}
+
+\textbf{Observación}: Los agentes con movilidad reducida actúan como obstáculos dinámicos que degradan significativamente el rendimiento del sistema.
+
+\textbf{Resultados}: En escenarios mixtos con 200 agentes:
+\begin{itemize}
+    \item 0\% lentos: 218 steps promedio
+    \item 25\% lentos: 265 steps (+21.6\%)
+    \item 50\% lentos: 295 steps (+35.3\%)
+    \item 100\% lentos: 316 steps (+44.9\%)
+\end{itemize}
+
+La velocidad macro promedio cae de 0.37 (sin lentos) a 0.26 (100\% lentos), una reducción del 30\%. La variabilidad ($\sigma$) del tiempo de evacuación aumenta significativamente con la proporción de agentes lentos, pasando de $\pm$12 steps (0\% lentos) a $\pm$28 steps (100\% lentos).
+
+\textbf{Interpretación}: La alta variabilidad observada sugiere que la \textit{posición} de los agentes lentos es tan crítica como su \textit{cantidad}. Un agente lento bloqueando un pasillo estrecho o una salida tiene un impacto desproporcionado comparado con un agente lento en un espacio abierto. Esto resalta la importancia de considerar la distribución espacial de poblaciones vulnerables (personas mayores, niños, personas con movilidad reducida) en el diseño de planes de evacuación.
+
+\subsection{Algoritmos de Pathfinding}
+
+\textbf{Observación}: El rendimiento relativo de A* vs. BFS es altamente dependiente de la topología del entorno.
+
+\textbf{Resultados}:
+\begin{itemize}
+    \item \textbf{Mall} (espacio abierto): A* 33\% más rápido que BFS (105 vs 140 steps)
+    \item \textbf{Seats} (obstáculos densos): BFS 8\% más rápido que A* (228 vs 248 steps)
+    \item \textbf{Corridor}: Rendimiento similar ($<$5\% diferencia)
+    \item \textbf{Snake}: BFS ligeramente superior (+12\%)
+\end{itemize}
+
+\textbf{Interpretación}: A* con heurística euclidiana optimiza rutas en espacios abiertos donde las líneas directas son viables, reduciendo significativamente la longitud del camino. Sin embargo, en entornos con obstáculos densos y caminos tortuosos (Seats, Snake), la heurística puede llevar a los agentes hacia \textit{mínimos locales} o "trampas", especialmente en las esquinas de las filas de asientos.
+
+BFS, al realizar una búsqueda exhaustiva sin sesgo direccional, garantiza encontrar el camino verdaderamente más corto alrededor de obstáculos complejos, aunque a un coste computacional ligeramente mayor. Para aplicaciones de seguridad crítica, la robustez de BFS puede ser preferible a la velocidad de A* en topologías complejas.
+
+\subsection{Preferencias de Salida}
+
+\textbf{Observación}: La asignación rígida de salidas preferidas es \textit{catastrófica} para la eficiencia comparada con el comportamiento oportunista de elegir la salida más cercana.
+
+\textbf{Resultados}: El impacto varía dramáticamente según el escenario:
+\begin{itemize}
+    \item \textbf{Mall}: +120\% tiempo de evacuación (110 vs 250 steps)
+    \item \textbf{Corridor}: +180\% (95 vs 265 steps)
+    \item \textbf{Seats}: +520\% (235 vs 1,460 steps)
+    \item \textbf{Snake}: +1,000\% (150 vs 1,650 steps)
+\end{itemize}
+
+El \textbf{factor de bloqueo} se dispara de 0.13 (sin preferencias) a 3.33 (con preferencias), un aumento del 2,461\%. La tasa de evacuación colapsa de 2.10 agentes/step a 0.61 agentes/step.
+
+\textbf{Interpretación}: Cuando los agentes tienen salidas preferidas fijas, se generan \textit{flujos cruzados} masivos: agentes viajando hacia salidas distantes deben atravesar los caminos de agentes dirigiéndose a salidas más cercanas. Este fenómeno crea bloqueos no en las salidas mismas, sino en el \textit{espacio abierto intermedio} donde se cruzan las trayectorias.
+
+El efecto es especialmente severo en Seats y Snake, donde los pasillos estrechos amplifican el problema del tráfico cruzado. Los agentes pasan por alto salidas completamente libres para alcanzar su "salida asignada", creando viajes innecesarios y congestión artificial.
+
+\textbf{Implicación práctica}: Los sistemas de señalización de emergencia nunca deben dirigir a las personas hacia salidas específicas de forma rígida. Las estrategias de enrutamiento dinámico que se adaptan a las condiciones de congestión en tiempo real son esenciales.
+
+\subsection{Número de Salidas}
+
+\textbf{Observación}: Aumentar el número de salidas mejora la eficiencia, pero con rendimientos decrecientes tras alcanzar la saturación del flujo interno.
+
+\textbf{Resultados} (escenario Mall, 200 agentes):
+\begin{itemize}
+    \item 1 salida: 285 steps, factor de bloqueo = 0.75
+    \item 2 salidas: 195 steps (-31.6\%), factor de bloqueo = 0.42
+    \item 4 salidas: 125 steps (-56.1\%), factor de bloqueo = 0.07
+    \item 8 salidas: 118 steps (-58.6\%), factor de bloqueo = 0.05
+\end{itemize}
+
+La ganancia marginal de añadir salidas disminuye drásticamente: pasar de 1 a 2 salidas reduce el tiempo un 31.6\%, pero de 4 a 8 salidas solo un 5.6\% adicional.
+
+\textbf{Interpretación}: Una vez que la capacidad de salida excede la tasa de flujo interno (determinada por la navegación entre obstáculos y la velocidad de los agentes), el cuello de botella se desplaza de las \textit{puertas} a la \textit{habitación misma}. Añadir más salidas no acelera la evacuación si los agentes no pueden llegar a ellas más rápido.
+
+El punto óptimo parece estar alrededor de 4 salidas distribuidas uniformemente en el perímetro para un espacio de 30x30 celdas con 200 agentes. Este resultado es consistente con códigos de construcción que requieren múltiples salidas separadas por distancias mínimas.
+
+\subsection{Ancho de Salida}
+
+\textbf{Observación}: Ampliar las salidas reduce drásticamente los cuellos de botella, pero el impacto es \textit{dependiente del contexto}.
+
+\textbf{Resultados} (escenario Seats, 125 agentes):
+\begin{itemize}
+    \item Ancho 1x: 449 steps, factor de bloqueo = 0.42, densidad local = 2.03
+    \item Ancho 2x: 456 steps (+1.6\%), factor de bloqueo = 0.35, densidad local = 1.85
+    \item Ancho 3x: 500 steps (+11.4\%), factor de bloqueo = 0.15, densidad local = 1.42
+    \item Ancho 4x: 449 steps (+0.1\%), factor de bloqueo = 0.03, densidad local = 1.06
+\end{itemize}
+
+\textbf{Resultado sorprendente}: En el escenario Seats estructurado, ampliar las salidas de 1x a 4x prácticamente \textit{no cambia} el tiempo total de evacuación (<1\% de diferencia), aunque sí reduce drásticamente el factor de bloqueo (-93\%) y la densidad local en las salidas (-48\%).
+
+\textbf{Interpretación}: En entornos con obstáculos internos densos (filas de asientos), el tiempo de evacuación está dominado por la \textit{navegación interna}, no por la capacidad de la salida. Los agentes llegan a las salidas de forma gradual y escalonada, no en una oleada simultánea, por lo que incluso una salida estrecha puede manejar el flujo.
+
+En contraste, en experimentos previos con espacios abiertos (sección 3.7), las salidas anchas sí mostraron mejoras significativas. Esto indica que el ancho de salida es crítico cuando la capacidad de la puerta es el cuello de botella (espacios abiertos, llegadas simultáneas), pero menos relevante cuando los obstáculos internos regulan el flujo de aproximación.
+
+\textbf{Implicación de diseño}: Antes de invertir en ampliar salidas, se debe analizar si el cuello de botella real está en la puerta o en la navegación interna. En auditorios y teatros, mejorar el ancho de los pasillos internos puede ser más efectivo que ampliar las puertas.
+
+\section{Análisis de Métricas de Comportamiento}
+
+Esta sección analiza la \textit{calidad} del movimiento de la multitud usando cuatro indicadores clave de comportamiento: \textbf{Tasa de Evacuación}, \textbf{Velocidad Promedio Macro}, \textbf{Factor de Bloqueo} y \textbf{Densidad Local}.
+
+\subsection{Impacto de la Densidad de Agentes en el Comportamiento}
+
+A medida que el número de agentes aumenta (10 $\to$ 300), se observa una clara degradación en la calidad del movimiento pero un aumento en el rendimiento del sistema:
 
 \begin{itemize}
-    \item \textbf{Mecanismo de Desatasco}: Los agentes agresivos actúan como "rompehielos". Al no titubear y ocupar agresivamente cualquier hueco libre, evitan que se formen estancamientos indecisos. Al salir rápidamente del sistema, liberan espacio para los agentes educados que vienen detrás.
-    \item \textbf{Orden de Salida}: Consistentemente, los agentes agresivos son los primeros en evacuar, seguidos por los educados.
+    \item \textbf{Trade-off Rendimiento vs. Eficiencia}: A medida que aumenta el número de agentes, la \textbf{Tasa de Evacuación} (agentes que salen por paso) aumenta significativamente (de $\sim$0.5 a $\sim$5.5), simplemente porque más agentes están presionando contra las salidas. Sin embargo, la eficiencia individual disminuye: la \textbf{Velocidad Promedio Macro} disminuye un 32\% (0.43 a 0.29). En resumen: \textbf{Más agentes significan una tasa de flujo colectivo más alta, pero movimiento individual más lento.}
+    \item \textbf{Congestión}: La Densidad Local aumenta linealmente de \textbf{0.18} a \textbf{2.10}, indicando hacinamiento extremo.
+    \item \textbf{Variabilidad}: La desviación estándar de la tasa de evacuación aumenta con la densidad, lo que significa que el flujo se vuelve más volátil (ráfagas de agentes saliendo seguidas de pausas).
+    \item \textbf{Bloqueo}: El Factor de Bloqueo aumenta bruscamente de negligible (\textbf{0.00}) en baja densidad a \textbf{0.22} con 300 agentes. Esto significa que >20\% de la multitud está atascada en cualquier momento dado en ejecuciones de alta densidad.
+    \item \textbf{Correlación}: Existe una fuerte correlación inversa entre Densidad Local y Velocidad Promedio, confirmando que la densidad es el principal motor de fricción.
 \end{itemize}
- 
-\section{Impacto de los Agentes Lentos}
-La presencia de agentes lentos tiene un impacto desproporcionadamente negativo en la eficiencia del sistema. No solo tardan más en salir individualmente, sino que generan un efecto de "onda de choque" hacia atrás, obligando a los agentes rápidos (agresivos o educados) a reducir su velocidad efectiva al quedar atrapados detrás de ellos en pasillos estrechos o cuellos de botella.
- 
-\section{La Ausencia del Efecto \textquotedbl Faster-is-Slower\textquotedbl}
-No se ha observado el fenómeno clásico donde el empuje excesivo reduce el flujo (bloqueo por arco). Esto sugiere que, en modelos discretos tipo grid sin física de fuerzas de contacto realistas, la "agresividad" (prioridad de turno) es computacionalmente más eficiente que la "cortesía" (espera y cesión de turno), ya que maximiza la utilización del espacio-tiempo disponible.
+
+\subsection{Rasgos de Comportamiento: Agresión vs. Lentitud}
+
+Comparar el impacto de la "personalidad" del agente en la dinámica de flujo revela tendencias direccionales similares pero con efectos opuestos:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcccp{5cm}}
+\toprule
+\textbf{Métrica} & \textbf{Educado} & \textbf{Agresivo} & \textbf{Lento} & \textbf{Insight} \\
+\midrule
+Tasa de Evacuación & $\sim$2.40 & \textbf{2.76} (+15\%) & 1.74 (-27\%) & La agresión mejora la tasa de flujo; la lentitud la paraliza. \\
+Factor de Bloqueo & 0.73 & \textbf{0.61} (-16\%) & 0.70 ($\sim$) & \textbf{Resultado Sorprendente:} Los agentes agresivos causan \textit{menos} bloqueos. Resuelven conflictos más rápido tomando posiciones en lugar de esperar. \\
+Velocidad Promedio & 0.37 & 0.38 ($\sim$) & \textbf{0.26} (-30\%) & La agresividad mantiene velocidad/flujo; la lentitud la reduce significativamente. \\
+\bottomrule
+\end{tabular}
+\caption{Comparación de métricas de comportamiento según el tipo de agente}
+\end{table}
+
+\textbf{Hallazgo Clave}: En este modelo de simulación, la "Agresión" actúa como un mecanismo de resolución de conflictos que previene comportamientos de congelamiento, llevando a un flujo general más suave a pesar de la implícita falta de educación. Por el contrario, los agentes lentos reducen la tasa de flujo efectiva de todo el sistema.
+
+\subsection{Factores Estratégicos: Salidas y Preferencias}
+
+La elección de la estrategia de salida exhibe el impacto más dramático en las métricas de comportamiento:
+
+\begin{itemize}
+    \item \textbf{Preferencia de Salida (Forzada)}:
+    \begin{itemize}
+        \item El \textbf{Factor de Bloqueo} se dispara a \textbf{3.33} (comparado con 0.13 sin preferencia). Esta irregularidad masiva sugiere que los agentes se bloquean físicamente entre sí mientras intentan cruzar caminos para alcanzar salidas distantes.
+        \item La \textbf{Tasa de Evacuación} cae en picado a \textbf{0.61} (vs 2.10). \textbf{Tener preferencias por salidas específicas ralentiza significativamente la tasa de evacuación.}
+        \item \textbf{Conclusión}: Los comportamientos rígidos en la dinámica de multitudes llevan a falla sistémica (bloqueo).
+    \end{itemize}
+    
+    \item \textbf{Número de Salidas}:
+    \begin{itemize}
+        \item \textbf{Flujo y Distribución}: Más salidas llevan a evacuación más rápida, pero hay rendimientos decrecientes. Una vez que todos los bordes tienen al menos una salida (ej., 4 salidas), agregar más produce mejoras mínimas.
+        \item \textbf{Caída del Bloqueo}: Crucialmente, aumentar el número de salidas causa que el \textbf{Factor de Bloqueo} caiga significativamente (0.75 con 1 salida $\to$ 0.07 con 4 salidas). Esto confirma que distribuir agentes a múltiples puntos les permite dispersarse, reduciendo la congestión local.
+    \end{itemize}
+    
+    \item \textbf{Ancho de Salida (Ampliación)}:
+    \begin{itemize}
+        \item El \textbf{Factor de Bloqueo} cae sistemáticamente: 0.42 (Ancho x1) $\to$ \textbf{0.03} (Ancho x3/x4).
+        \item La \textbf{Densidad Local} disminuye: 2.03 $\to$ 1.06.
+        \item \textbf{Conclusión}: Ampliar las salidas resuelve el problema de obstrucción del "arco", virtualmente eliminando los retrasos basados en interacción en el punto de salida.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Resumen de Correlaciones}
+
+\begin{itemize}
+    \item \textbf{Densidad Local} es la variable maestra: se correlaciona inversamente con Velocidad y Flujo. Alta densidad garantiza menor rendimiento individual de los agentes.
+    \item \textbf{Bloqueo} es un síntoma de diseño pobre (Salidas Estrechas) o estrategia pobre (Preferencia de Salida), pero \textit{no} necesariamente alta densidad sola (a menos que la densidad sea extrema).
+    \item \textbf{Agresión} se correlaciona negativamente con Bloqueo (más agresión = menos bloqueo), desafiando la suposición de que el comportamiento educado es siempre óptimo para multitudes.
+\end{itemize}
+
+\section{Análisis de Evolución Temporal}
+
+Mientras que los resultados agregados revelan patrones a nivel de sistema, el análisis temporal paso a paso expone la \textit{dinámica} de los procesos de evacuación. Esta sección examina cómo evolucionan los bloqueos y la velocidad a lo largo del tiempo normalizado de la simulación, enfocándose en los experimentos de \textbf{Preferencias de Salida} y \textbf{Ancho de Salida}.
+
+\subsection{Metodología de Normalización Temporal}
+
+Para comparar simulaciones de diferente duración, se implementó una normalización temporal:
+\begin{equation}
+t_{\text{norm}} = \frac{\text{Step actual}}{\text{Step máximo}} \in [0, 1]
+\end{equation}
+
+El tiempo normalizado se dividió en 10 intervalos (bins) de igual amplitud: [0-10\%, 10-20\%, ..., 90-100\%], permitiendo agregar métricas en fases equivalentes del proceso de evacuación.
+
+\subsection{Dinámica de las Preferencias de Salida}
+
+\subsubsection{Evolución del Factor de Bloqueo}
+
+El análisis temporal revela tres fases distintas en las simulaciones con preferencias de salida:
+
+\textbf{Fase 1: Inicio Libre (0-10\%)}: Ambas configuraciones inician con bajo bloqueo. Sin preferencias, el factor de bloqueo se mantiene casi en cero (0.02), mientras que con preferencias alcanza 0.14, indicando conflictos tempranos.
+
+\textbf{Fase 2: Congestión Creciente (10-50\%)}: Con preferencias, el bloqueo crece exponencialmente, alcanzando su pico en el rango 40-50\% con un factor de 3.94. Esto representa un aumento del \textbf{722\%} comparado con el pico sin preferencias (0.48 en el rango 60-70\%).
+
+\textbf{Fase 3: Resolución Prolongada (50-100\%)}: La congestión persiste durante el 32.8\% de la duración total de las simulaciones con preferencias, comparado con solo 16.2\% sin preferencias. Esto indica un tiempo de resolución de conflictos \textbf{102\% más largo}.
+
+\textbf{Momento Crítico}: El pico de bloqueo ocurre en promedio en $t_{\text{norm}} = 0.42$ para preferencias vs. $t_{\text{norm}} = 0.65$ sin preferencias. Esto significa que el colapso del flujo sucede \textit{antes} en el proceso cuando hay preferencias rígidas.
+
+\subsubsection{Evolución de la Velocidad Macro}
+
+La velocidad macro actúa como un \textit{indicador predictivo} de congestión inminente:
+
+\textbf{Degradación Temprana}: Con preferencias, la velocidad cae de 0.37 (inicio) a 0.21 (pico de congestión, 40-50\%), una reducción del 43\%. Sin preferencias, la caída es más gradual: de 0.37 a 0.30 (19\% de reducción).
+
+\textbf{Patrón de Recuperación}: Sin preferencias, la velocidad se recupera rápidamente después del 60\%, alcanzando 0.35 al final (recuperación del 95\%). Con preferencias, la recuperación es incompleta: apenas alcanza 0.28 al final (76\% de recuperación).
+
+\textbf{Insight Clave}: La velocidad promedio \textit{desciende 10-20\% del tiempo normalizado \textbf{antes} de que el factor de bloqueo alcance su pico}. Esto convierte a la velocidad en una señal de alerta temprana viable para sistemas de monitoreo en tiempo real.
+
+\subsubsection{Mecanismo Causal: Tráfico Cruzado}
+
+El análisis temporal confirma que el problema fundamental con las preferencias de salida es el \textbf{tráfico cruzado}: agentes que viajan hacia salidas distantes deben cruzar las trayectorias de otros agentes dirigiéndose a salidas cercanas.
+
+Este patrón genera:
+\begin{itemize}
+    \item \textbf{Bloqueos No Localizados}: La congestión ocurre en el espacio abierto intermedio, no en las salidas
+    \item \textbf{Cascadas de Interferencia}: Un bloqueo en una ruta fuerza a agentes a recalcular, cruzando más rutas
+    \item \textbf{Saturación Prematura}: El espacio utilizable se reduce efectivamente al convertirse en una "intersección de alto tráfico"
+\end{itemize}
+
+\subsection{Dinámica del Ancho de Salida}
+
+\subsubsection{Resultado Contraintuitivo en Entornos Estructurados}
+
+En el escenario \textbf{Seats}, ampliar las salidas de 1x a 4x produce cambios mínimos en el tiempo total de evacuación (<1\% de diferencia), pero el análisis temporal revela \textit{cambios significativos en la distribución de la congestión}:
+
+\textbf{Ancho 1x}: Factor de bloqueo pico = 1.24 en el rango 70-80\%
+
+\textbf{Ancho 2x}: Factor de bloqueo pico = 1.18 en el rango 60-70\%
+
+\textbf{Ancho 3x}: Factor de bloqueo pico = 1.14 en el rango 50-60\%
+
+\textbf{Ancho 4x}: Factor de bloqueo pico = 1.10 en el rango 40-50\%
+
+\textbf{Patrón Observado}: Salidas más anchas \textit{adelantan} la aparición del pico de bloqueo, pero no reducen significativamente su magnitud ni el tiempo total de evacuación. Esto se debe a que el cuello de botella real está en la navegación entre las filas de asientos, no en la capacidad de la salida.
+
+\subsubsection{Velocidad Macro Constante}
+
+A diferencia del experimento de preferencias, el ancho de salida tiene impacto mínimo en la velocidad macro promedio:
+\begin{itemize}
+    \item Ancho 1x: velocidad promedio = 0.28
+    \item Ancho 4x: velocidad promedio = 0.28
+\end{itemize}
+
+Esto confirma que en Seats, los agentes pasan la mayor parte del tiempo navegando entre obstáculos internos a velocidad constante, no esperando en colas en las salidas. Las salidas anchas mejoran la \textit{experiencia} (menor hacinamiento en la puerta), pero no la \textit{eficiencia} (tiempo total).
+
+\subsection{Implicaciones para el Diseño}
+
+El análisis temporal revela principios de diseño que no son evidentes en métricas agregadas:
+
+\textbf{1. Evitar Asignaciones Rígidas}: Los sistemas de señalización deben ser \textit{adaptativos}, redirigiendo a las personas hacia salidas con menor congestión observada, no hacia salidas predefinidas.
+
+\textbf{2. Monitoreo de Velocidad}: Implementar sensores de velocidad de flujo puede proporcionar alertas 10-20\% antes de que ocurran bloqueos críticos, permitiendo intervenciones tempranas.
+
+\textbf{3. Contexto del Ancho de Salida}: Ampliar salidas es efectivo en \textit{espacios abiertos} donde las personas llegan simultáneamente, pero menos útil en \textit{espacios estructurados} donde llegan escalonadamente.
+
+\textbf{4. Fases de Congestión}: Los diseñadores deben considerar no solo el pico de congestión, sino su \textit{duración}. Configuraciones que producen picos altos pero breves pueden ser preferibles a picos moderados pero persistentes.
+
+\section{Conclusiones Generales}
+
+\begin{enumerate}
+    \item \textbf{Oportunista > Estratégico}: Los agentes siempre deben elegir la salida válida más cercana. La planificación previa (Preferencias) falla bajo condiciones dinámicas.
+    \item \textbf{La Agresión es Eficiente}: En evacuaciones de alta densidad, la vacilación (educación) es fatal para el flujo. El movimiento decisivo (agresivo) despeja los cuellos de botella más rápido.
+    \item \textbf{La Geometría Dicta el Flujo}: Las intervenciones más efectivas son geométricas (Salidas Más Anchas, Más Salidas, Espacio Abierto). Ninguna cantidad de optimización de comportamiento de agentes compensa un cuello de botella físico (Ancho x1 Bloqueo = 0.42).
+    \item \textbf{Temporal > Agregado}: El análisis paso a paso revela dinámicas invisibles en promedios globales. La velocidad actúa como indicador de alerta temprana, detectando congestión inminente 10-20\% antes del pico de bloqueo.
+    \item \textbf{Contexto es Crítico}: Las mismas intervenciones (ej., ampliar salidas) tienen impactos dramáticamente diferentes según la topología del espacio. Los espacios abiertos requieren optimización de puertas; los estructurados requieren optimización de pasillos internos.
+\end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
