@@ -301,6 +301,8 @@ Comparado con los modelos planteados en el estado del arte, esta elección prese
     \item \textbf{Espacio Discreto}: El entorno se divide en celdas cuadradas, donde cada celda haremos que solo pueda contener un agente, una pared (obstáculo) o una salida. Esto simplifica la detección de colisiones y elimina los costosos cálculos de geometrías complejas realistas.
     \item \textbf{Tiempo Discreto}: La simulación avanza en pasos discretos o "steps". La velocidad de los agentes se modela probabilísticamente: un agente con "mayor velocidad" simplemente tiene una mayor probabilidad de moverse en cada step.
     \item \textbf{Navegación}: La estructura de malla facilita la implementación directa de algoritmos de búsqueda de caminos en grafos como BFS y A*, esenciales para la planificación de rutas de los agentes. Con estos algoritmos, se pueden modelar las rutas óptimas hacia las salidas teniendo en cuenta los obstáculos.
+    
+    BFS es simple y representa NO tener conocimento previo del entorno (seguir solo las señales de evacuación), mientras que A* permite incorporar heurísticas para simular conocimiento previo o preferencias de ruta (sé que por aquí había una salida). Esto permite estudiar como afecta el conocimiento el que las personas hagan caso a las señales de evacuación o a su instinto.
 \end{enumerate}
 
 \section{Agentes: Comportamiento en Evacuación}
@@ -418,6 +420,17 @@ La cantidad de salidas en cada escenario se puede configurar, yendo desde una so
     \caption{Escenarios implementados en el sistema. Cada uno presenta diferentes configuraciones de obstáculos y salidas para evaluar distintos aspectos del comportamiento de multitudes.}
     \label{fig:all_scenarios}
 \end{figure}
+
+Mencionar que las salidas NO están incrustadas el las paredes, sino que son celdas libres en los bordes de la malla. Los agentes pueden salir del escenario al llegar a una celda de salida y esto se puede hacer de 5 en 5. Esto quiere decir que el flujo máximo que cada salida puede soportar es de 5 agentes por tick.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\linewidth]{images/pos_salidas.png}
+	\caption{Posición de las salidas importa y puede afectar a la cantidad de agentes que pueden evacuar rápidamente.}
+	\label{fig:pos_salidas.png}
+\end{figure}
+
+Es caso de haberlas incrustado, sería de tres. Es algo a mencionar con lo que NO se experimenta en este trabajo, pero que podría ser interesante para futuros estudios. Somos generosos y cualquier agente al lado de usa salida puede evacuar, lo que puede no ser realista en escenarios de alta densidad ya que las puertas físicas tienen un ancho limitado.
+
 \subsection{Variables Experimentales}
 En cada escenario, se modifican las siguientes variables independientes para observar su impacto en las métricas:
 \begin{itemize}
@@ -507,9 +520,6 @@ Se han llevado a cabo las siguientes baterías de experimentos, modificando par�
     \end{itemize}
 \end{enumerate}
 
-
-
-\clearpage
 
 \section{Deadlocks}
 Los deadlocks serán estudiados mediante la métrica de \textbf{Factor de Bloqueo}, observando su evolución temporal y su correlación con la densidad y composición de la multitud.
@@ -769,13 +779,13 @@ Esta sección examina los \textbf{resultados finales} de las simulaciones, anali
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{images/plot_n_agents.png}
-	\caption{Impacto del número de agentes en el tiempo total de evacuación en diferentes escenarios. Se observa un aumento no lineal, especialmente pronunciado en entornos con obstáculos internos (Seats).}
+	\caption{Impacto del número de agentes en el tiempo total de evacuación en diferentes escenarios.}
 	\label{fig:plot_n_agents}
 \end{figure}
 
-\textbf{Interpretación}: Los entornos altamente estructurados con obstáculos internos (Seats) son extremadamente sensibles a la densidad poblacional. La presencia de filas de asientos crea múltiples cuellos de botella internos que se saturan rápidamente. En contraste, los espacios con flujo más directo (Corridor) manejan el incremento de carga de manera más lineal, permitiendo que los agentes se distribuyan mejor a lo largo de los pasillos.
+\textbf{Interpretación}: Los entornos altamente estructurados con obstáculos internos y cuellos de botella (Seats) son extremadamente sensibles a la densidad poblacional y se saturan rápidamente. En contraste, los espacios con flujo más directo (Corridor) manejan el incremento de carga de manera más lineal, permitiendo que los agentes se distribuyan mejor a lo largo de los pasillos.
 
-La métrica de \textbf{densidad local promedio} confirma esta observación, aumentando de 0.18 vecinos (10 agentes) a 2.10 vecinos (300 agentes), lo que representa un factor multiplicativo de más de 11x en la percepción de hacinamiento individual.
+La métrica de \textbf{densidad local promedio} confirma esta observación, aumentando de 0.18 vecinos (10 agentes) a 2.10 vecinos (300 agentes), lo que indica que los agentes tiendes a estar más agrupados y por lo tanto ir más lentos.
 
 \subsection{Comportamiento Agresivo}
 
@@ -789,16 +799,14 @@ La métrica de \textbf{densidad local promedio} confirma esta observación, aume
     \item 100\% agresivos: 205 steps (-13.9\%)
 \end{itemize}
 
-La tasa de evacuación aumenta de 2.40 agentes/step (educados) a 2.76 agentes/step (agresivos), un incremento del 15\%. Más sorprendente aún, el \textbf{factor de bloqueo} disminuye del 0.73 (educados) al 0.61 (agresivos), una reducción del 16\%.
-
-Se ven patrones similares independientemente de la cantidad inicial de agentes (125, 200, 300), aunque el efecto es más pronunciado a densidades medias-altas.
+La tasa de evacuación aumenta de 2.40 agentes/step (educados) a 2.76 agentes/step (agresivos), un incremento del 15\%. Más sorprendente aún, el \textbf{factor de bloqueo} disminuye del 0.73 (educados) al 0.61 (agresivos), una reducción del 16\%. Se ven patrones similares independientemente de la cantidad inicial de agentes (125, 200, 300).
 
 Ahora, si nos fijamos en el tiempo medio de evacuación por tipo de agente, los agresivos siempre evacuan más rápido que los educados y además, se ve de forma significativa que los educados tardan menos cuando hay más agresivos en la mezcla.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{images/plot_aggressive_impact.png}
-	\caption{Impacto del porcentaje de agentes agresivos en el tiempo total de evacuación y el tiempo promedio por tipo de agente en el escenario Seats con 200 agentes. Rojo: Agresivos, Azul: Educados, Verde: Promedio total.}
+	\caption{Impacto proporción agentes agresivos en tiempo total de evacuación y promedio por tipo de agente en Seats con 200 agentes. Rojo: Agresivos, Azul: Educados, Verde: Promedio total. El ratio es de 0 a 1, siendo 1 la cantidad máxima de agresivos (mitad de la población).}
 	\label{fig:plot_aggressive_impact}
 \end{figure}
 
@@ -820,16 +828,16 @@ Este resultado desafía la intuición común de que la cooperación siempre opti
 
 La velocidad macro promedio cae de 0.37 (sin lentos) a 0.26 (100\% lentos), una reducción del 30\%. La variabilidad ($\sigma$) del tiempo de evacuación aumenta significativamente con la proporción de agentes lentos, pasando de $\pm$12 steps (0\% lentos) a $\pm$28 steps (100\% lentos).
 
-Pasa lo mismo que con los agresivos pero al revés: lo agentes, en general tardan más cuanto mayor es el porcentaje de lentos en la mezcla. Y además, los lentos siempre tardan más que los educados. Se ven patrones similares independientemente de la cantidad inicial de agentes (125, 200, 300), aunque el efecto es más pronunciado a densidades medias-altas.
+Pasa lo mismo que con los agresivos pero al revés: lo agentes, en general tardan más cuanto mayor es el porcentaje de lentos en la mezcla. Y además, los lentos siempre tardan más en evacuar que los educados. Se ven patrones similares independientemente de la cantidad inicial de agentes (125, 200, 300).
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=1\linewidth]{images/plot_slow_impact.png}
-	\caption{Impacto del porcentaje de agentes lentos en el tiempo total de evacuación y el tiempo promedio por tipo de agente en el escenario Seats con 200 agentes. Amarillo: Lentos, Morado: Polite, Verde: Promedio total.}
+	\caption{Impacto proporción agentes lentos en el tiempo total de evacuación y promedio por tipo de agente en Seats con 200 agentes. Amarillo: Lentos, Morado: Polite, Verde: Promedio total. El ratio es de 0 a 1, siendo 1 la cantidad máxima de lentos (mitad de la población).}
 	\label{fig:plot_slow_impact}
 \end{figure}
 
-\textbf{Interpretación}: La alta variabilidad observada sugiere que la \textit{posición} de los agentes lentos es tan crítica como su \textit{cantidad}. Un agente lento bloqueando un pasillo estrecho o una salida tiene un impacto desproporcionado comparado con un agente lento en un espacio abierto. Esto resalta la importancia de considerar la distribución espacial de poblaciones vulnerables (personas mayores, niños, personas con movilidad reducida) en el diseño de planes de evacuación.
+\textbf{Interpretación}: La alta variabilidad observada sugiere que la \textit{posición} de los agentes lentos importa tanto como su \textit{cantidad}. Un agente lento bloqueando un pasillo estrecho o una salida tiene un impacto desproporcionado comparado con un agente lento en un espacio abierto. Esto resalta la importancia de considerar la distribución espacial de poblaciones vulnerables (personas mayores, niños, personas con movilidad reducida) en el diseño de planes de evacuación.
 
 \subsection{Algoritmos de Pathfinding}
 
@@ -845,7 +853,9 @@ Pasa lo mismo que con los agresivos pero al revés: lo agentes, en general tarda
 
 \textbf{Interpretación}: A* con heurística euclidiana optimiza rutas en espacios abiertos donde las líneas directas son viables, reduciendo significativamente la longitud del camino. Sin embargo, en entornos con obstáculos densos y caminos tortuosos (Seats, Snake), la heurística puede llevar a los agentes hacia \textit{mínimos locales} o "trampas", especialmente en las esquinas de las filas de asientos.
 
-BFS, al realizar una búsqueda exhaustiva sin sesgo direccional, garantiza encontrar el camino verdaderamente más corto alrededor de obstáculos complejos, aunque a un coste computacional ligeramente mayor. Para aplicaciones de seguridad crítica, la robustez de BFS puede ser preferible a la velocidad de A* en topologías complejas.
+\textbf{Implicación práctica}: A* es una búsqueda informada, representa a agentes que sobrevalorar ciertas rutas basándose en la su conocimiento, mientras que BFS explora todas las opciones de manera uniforme, lo que resulta en mejores decisiones en entornos como seguir siempre las señales de evacuación. 
+
+Ya que depende del escenario, es algo a valorar si poner señalización o no en un entorno real.
 
 \subsection{Preferencias de Salida}
 
@@ -853,7 +863,7 @@ BFS, al realizar una búsqueda exhaustiva sin sesgo direccional, garantiza encon
 
 \textbf{Resultados}: El impacto varía dramáticamente según el escenario:
 \begin{itemize}
-    \item \textbf{Mall}: +120\% tiempo de evacuación (110 vs 250 steps)
+    \item \textbf{Mall}: +120\% tiempo de evacuación al preferir salidas (110 vs 250 steps)
     \item \textbf{Corridor}: +180\% (95 vs 265 steps)
     \item \textbf{Seats}: +520\% (235 vs 1,460 steps)
     \item \textbf{Snake}: +1,000\% (150 vs 1,650 steps)
@@ -869,7 +879,7 @@ El efecto es especialmente severo en Seats y Snake, donde los pasillos estrechos
 
 \subsection{Número de Salidas}
 
-\textbf{Observación}: Aumentar el número de salidas mejora la eficiencia, pero con rendimientos decrecientes tras alcanzar la saturación del flujo interno.
+\textbf{Observación}: Aumentar el número de salidas mejora la eficiencia hasta saturar el flujo y llegar a un máximo donde añadir más salidas no aporta beneficios significativos.
 
 \textbf{Resultados} (escenario Mall, 200 agentes):
 \begin{itemize}
@@ -881,29 +891,36 @@ El efecto es especialmente severo en Seats y Snake, donde los pasillos estrechos
 
 La ganancia marginal de añadir salidas disminuye drásticamente: pasar de 1 a 2 salidas reduce el tiempo un 31.6\%, pero de 4 a 8 salidas solo un 5.6\% adicional.
 
-\textbf{Interpretación}: Una vez que la capacidad de salida excede la tasa de flujo interno (determinada por la navegación entre obstáculos y la velocidad de los agentes), el cuello de botella se desplaza de las \textit{puertas} a la \textit{habitación misma}. Añadir más salidas no acelera la evacuación si los agentes no pueden llegar a ellas más rápido.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\linewidth]{images/plot_n_exits.png}
+	\caption{Impacto número de salidas en el tiempo total de evacuación en escenarios con 200 agentes. No todos los escenarios permiten el mismo número máximo de salidas.}
+	\label{fig:plot_n_exits}
+\end{figure}
 
-El punto óptimo parece estar alrededor de 4 salidas distribuidas uniformemente en el perímetro para un espacio de 30x30 celdas con 200 agentes. Este resultado es consistente con códigos de construcción que requieren múltiples salidas separadas por distancias mínimas.
+
+\textbf{Interpretación}: Una vez que nl escenario tiene salidas cerca de cada borde, el cuello de botella se desplaza de las \textit{puertas} a la \textit{habitación misma}. Añadir más salidas no acelera la evacuación si los agentes no pueden llegar a ellas más rápido.
+
+El punto óptimo parece estar alrededor de 4 salidas distribuidas uniformemente (una en cada lado). Este resultado se observa en todos los escenarios, aunque la saturación ocurre a diferentes niveles según la topología como en \textbf{Seats}, donde don 2 ya se satura.
 
 \subsection{Ancho de Salida}
 
-\textbf{Observación}: Ampliar las salidas reduce drásticamente los cuellos de botella, pero el impacto es \textit{dependiente del contexto}.
+\textbf{Observación}: Ampliar el ancho de los caminos hacia las salidas reduce drásticamente los cuellos de botella, pero el impacto es \textit{dependiente del contexto}.
 
 \textbf{Resultados} (escenario Seats, 125 agentes):
+
 \begin{itemize}
-    \item Ancho 1x: 449 steps, factor de bloqueo = 0.42, densidad local = 2.03
-    \item Ancho 2x: 456 steps (+1.6\%), factor de bloqueo = 0.35, densidad local = 1.85
-    \item Ancho 3x: 500 steps (+11.4\%), factor de bloqueo = 0.15, densidad local = 1.42
-    \item Ancho 4x: 449 steps (+0.1\%), factor de bloqueo = 0.03, densidad local = 1.06
+    \item Ancho 1x: 142.3  steps, factor de bloqueo = 0.42, densidad local = 2.03
+    \item Ancho 2x: 103.0 steps (+1.6\%), factor de bloqueo = 0.35, densidad local = 1.85
+    \item Ancho 3x: 101.2 steps (+11.4\%), factor de bloqueo = 0.15, densidad local = 1.42
+    \item Ancho 4x: 99.8 steps (+0.1\%), factor de bloqueo = 0.03, densidad local = 1.06
 \end{itemize}
 
-\textbf{Resultado sorprendente}: En el escenario Seats estructurado, ampliar las salidas de 1x a 4x prácticamente \textit{no cambia} el tiempo total de evacuación (<1\% de diferencia), aunque sí reduce drásticamente el factor de bloqueo (-93\%) y la densidad local en las salidas (-48\%).
+\textbf{Resultado sorprendente}: Ampliar el ancho de salida, solo se ve una reducción significativa en el tiempo de evacuación al pasar de 1 a 2 en un 29.8\% (142.3 a 99.8 steps), mucho menos de lo esperado. A partir de ahí, las ganancias son marginales (menos del 2\% adicional), saturándose.
 
-\textbf{Interpretación}: En entornos con obstáculos internos densos (filas de asientos), el tiempo de evacuación está dominado por la \textit{navegación interna}, no por la capacidad de la salida. Los agentes llegan a las salidas de forma gradual y escalonada, no en una oleada simultánea, por lo que incluso una salida estrecha puede manejar el flujo.
+\textbf{Interpretación}: En entornos con obstáculos internos densos (filas de asientos), el tiempo de evacuación está dominado por la \textit{navegación interna}. Como vemos, se produce un cambio grande al pasar de pasillos estrechos a anchos (1x a 2x), pero luego, los agentes siguen mantienen el flujo, ampliar más no aporta beneficios significativos.
 
-En contraste, en experimentos previos con espacios abiertos (sección 3.7), las salidas anchas sí mostraron mejoras significativas. Esto indica que el ancho de salida es crítico cuando la capacidad de la puerta es el cuello de botella (espacios abiertos, llegadas simultáneas), pero menos relevante cuando los obstáculos internos regulan el flujo de aproximación.
-
-\textbf{Implicación de diseño}: Antes de invertir en ampliar salidas, se debe analizar si el cuello de botella real está en la puerta o en la navegación interna. En auditorios y teatros, mejorar el ancho de los pasillos internos puede ser más efectivo que ampliar las puertas.
+\textbf{Implicación de diseño}: A la hora de diseñar rutas de evacuación, es crucial identificar hasta donsde un cambio agiliza la evacuación, y no limitarse a ampliar sin más. Si se pueden añadir más butacas sin afectar la evacuación, es preferible hacerlo para maximizar la capacidad del espacio. Después, habrá que analizar que otros factores (num. agentes, comportamiento, etc.) están limitando el flujo.
 
 \section{Análisis de Métricas de Comportamiento}
 
@@ -1087,11 +1104,14 @@ De los experimentos de evacuación realizados, se extraen las siguientes conclus
     \item \textbf{Limitaciones del Modelo Discreto en Evacuación}: Se observa que en situaciones de flujos opuestos durante la evacuación o convergencia en ángulos rectos hacia las salidas, los agentes tienden a bloquearse (deadlock) con mayor facilidad que en modelos de fuerzas continuas, debido a la rigidez de la rejilla y la falta de "deslizamiento" físico.
 \end{enumerate}
 
+No se han observado colas en las salidas en los escenarios estudiados como sí pasa en la vida real. Esto puede ser debido a la generosidad que hemos dado a que cualquier agente en alguna de las 5 celdas alrededor de la salida pueda salir, lo que reduce la congestión en la puerta.
+
 \section{Trabajo Futuro}
 Para superar las limitaciones identificadas, se proponen las siguientes líneas de investigación: 
 \begin{itemize}
     \item \textbf{Sistema Anti-Deadlock Avanzado}: Implementar un sistema de "reputación de celda" donde, si un agente queda bloqueado mucho tiempo en una posición, marque esa celda como "costosa" en el mapa de navegación global, forzando a otros agentes a recalcular rutas (repathing) lejos de la congestión.
     \item \textbf{Sub-Grid Movement}: Permitir coordenadas continuas dentro de las celdas discretas para suavizar el movimiento y permitir adelantamientos más realistas.
+    \item Investigar influencia de las posiciones de las salidas y cuantos agentes pueden salir por step en función del ancho de estas. 
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                                             %
