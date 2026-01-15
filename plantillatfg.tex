@@ -478,14 +478,14 @@ Se han llevado a cabo las siguientes baterías de experimentos, modificando par�
     \item \textbf{Impacto de la Agresividad}:
     \begin{itemize}
         \item \textbf{Escenario Focal}: SEATS (Entorno estructurado).
-        \item \textbf{Variaciones}: Ratio de agentes agresivos [0\%, 10\%, 25\%, 50\%, 80\%, 100\%] manteniendo el resto como Polite.
+        \item \textbf{Variaciones}: Ratio de agentes agresivos [0\%, 10\%, 25\%, 50\%, 80\%, 100\%] manteniendo el resto como Polite sin lentos.
         \item \textbf{Densidades Probadas}: 125, 200 y 300 agentes.
     \end{itemize}
     
     \item \textbf{Impacto de Agentes Lentos}:
     \begin{itemize}
         \item \textbf{Escenario Focal}: SEATS.
-        \item \textbf{Variaciones}: Ratio de agentes lentos [0\%, 10\%, 25\%, 50\%, 80\%, 100\%] manteniendo el resto como Polite.
+        \item \textbf{Variaciones}: Ratio de agentes lentos [0\%, 10\%, 25\%, 50\%, 80\%, 100\%] manteniendo el resto como Polite sin agresivos.
         \item \textbf{Densidades Probadas}: 125, 200 y 300 agentes.
     \end{itemize}
     
@@ -739,8 +739,8 @@ Las simulaciones se han centrado en recopilar los \textbf{Steps} totales requeri
 Las siguientes variables han sido analizadas:
 \begin{enumerate}
     \item \textbf{Densidad de Agentes}: Impacto del aumento del tamaño de la multitud (10 a 300 agentes).
-    \item \textbf{Comportamiento Agresivo}: Efecto de la competitividad de los agentes (0\% a 100\% agresivos).
-    \item \textbf{Agentes Lentos}: Impacto de agentes con movilidad reducida (0\% a 100\% lentos).
+    \item \textbf{Comportamiento Agresivo}: Efecto de la competitividad de los agentes (0\% a 100\% agresivos). NO habrá agentes lentos.
+    \item \textbf{Agentes Lentos}: Impacto de agentes con movilidad reducida (0\% a 100\% lentos). NO habrá agentes agresivos.
     \item \textbf{Algoritmos de Pathfinding}: Comparación entre A* (con heurística) y BFS (sin heurística).
     \item \textbf{Preferencias de Salida}: Impacto de la selección de salida pre-asignada vs. salida más cercana (lo que llaman oportunista).
     \item \textbf{Número de Salidas}: Ganancias de eficiencia con múltiples salida (1 al máximo que acepte el escenario).
@@ -783,7 +783,7 @@ La métrica de \textbf{densidad local promedio} confirma esta observación, aume
 
 \textbf{Resultados}: En el escenario \textbf{Seats} con 200 agentes:
 \begin{itemize}
-    \item 0\% agresivos (solo educados): 238 steps promedio
+    \item 0\% agresivos: 238 steps promedio
     \item 25\% agresivos: 225 steps (-5.5\%)
     \item 50\% agresivos: 215 steps (-9.7\%)
     \item 100\% agresivos: 205 steps (-13.9\%)
@@ -791,15 +791,26 @@ La métrica de \textbf{densidad local promedio} confirma esta observación, aume
 
 La tasa de evacuación aumenta de 2.40 agentes/step (educados) a 2.76 agentes/step (agresivos), un incremento del 15\%. Más sorprendente aún, el \textbf{factor de bloqueo} disminuye del 0.73 (educados) al 0.61 (agresivos), una reducción del 16\%.
 
+Se ven patrones similares independientemente de la cantidad inicial de agentes (125, 200, 300), aunque el efecto es más pronunciado a densidades medias-altas.
+
+Ahora, si nos fijamos en el tiempo medio de evacuación por tipo de agente, los agresivos siempre evacuan más rápido que los educados y además, se ve de forma significativa que los educados tardan menos cuando hay más agresivos en la mezcla.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{images/plot_aggressive_impact.png}
+	\caption{Impacto del porcentaje de agentes agresivos en el tiempo total de evacuación y el tiempo promedio por tipo de agente en el escenario Seats con 200 agentes. Rojo: Agresivos, Azul: Educados, Verde: Promedio total.}
+	\label{fig:plot_aggressive_impact}
+\end{figure}
+
 \textbf{Interpretación}: Los agentes agresivos actúan como \textit{catalizadores de flujo} en situaciones de congestión. Al priorizar su propio movimiento y ocupar espacios disponibles sin vacilación, resuelven situaciones de bloqueo mutuo más rápidamente que los agentes educados, que tienden a esperar y ceder el paso. Hay que tener en cuenta que estos agentes están 'bufados', ya que tienen prioridad de movimiento y son menos afectados por la densidad local.
 
-Este resultado desafía la intuición común de que la cooperación siempre optimiza el flujo en multitudes, demostrando que en modelos discretos la decisión rápida supera a la cortesía excesiva.
+Este resultado desafía la intuición común de que la cooperación siempre optimiza el flujo en multitudes, demostrando que en modelos discretos el movimiento rápido supera a ser cuidadoso.
 
 \subsection{Agentes Lentos}
 
-\textbf{Observación}: Los agentes con movilidad reducida actúan como obstáculos dinámicos que degradan significativamente el rendimiento del sistema.
+\textbf{Observación}: Los agentes con movilidad reducida actúan como obstáculos dinámicos que empeoran significativamente la evacuación.
 
-\textbf{Resultados}: En escenarios mixtos con 200 agentes:
+\textbf{Resultados}: En escenario \textbf{Seats} con 200 agentes:
 \begin{itemize}
     \item 0\% lentos: 218 steps promedio
     \item 25\% lentos: 265 steps (+21.6\%)
@@ -808,6 +819,15 @@ Este resultado desafía la intuición común de que la cooperación siempre opti
 \end{itemize}
 
 La velocidad macro promedio cae de 0.37 (sin lentos) a 0.26 (100\% lentos), una reducción del 30\%. La variabilidad ($\sigma$) del tiempo de evacuación aumenta significativamente con la proporción de agentes lentos, pasando de $\pm$12 steps (0\% lentos) a $\pm$28 steps (100\% lentos).
+
+Pasa lo mismo que con los agresivos pero al revés: lo agentes, en general tardan más cuanto mayor es el porcentaje de lentos en la mezcla. Y además, los lentos siempre tardan más que los educados. Se ven patrones similares independientemente de la cantidad inicial de agentes (125, 200, 300), aunque el efecto es más pronunciado a densidades medias-altas.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{images/plot_slow_impact.png}
+	\caption{Impacto del porcentaje de agentes lentos en el tiempo total de evacuación y el tiempo promedio por tipo de agente en el escenario Seats con 200 agentes. Amarillo: Lentos, Morado: Polite, Verde: Promedio total.}
+	\label{fig:plot_slow_impact}
+\end{figure}
 
 \textbf{Interpretación}: La alta variabilidad observada sugiere que la \textit{posición} de los agentes lentos es tan crítica como su \textit{cantidad}. Un agente lento bloqueando un pasillo estrecho o una salida tiene un impacto desproporcionado comparado con un agente lento en un espacio abierto. Esto resalta la importancia de considerar la distribución espacial de poblaciones vulnerables (personas mayores, niños, personas con movilidad reducida) en el diseño de planes de evacuación.
 
