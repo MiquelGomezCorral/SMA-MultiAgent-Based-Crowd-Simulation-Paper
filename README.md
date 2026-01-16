@@ -1,4 +1,4 @@
-# UPV/ETSINF Thesis Template (Unofficial Enhanced Version)
+# Simulación de Evacuación mediante Sistemas Multi-Agentes con MESA
 
 [English](#english) | [Español](#español)
 
@@ -8,20 +8,20 @@
 ## English
 
 ### About this project
-This is a modified version of the LaTeX template for Bachelor's (TFG) and Master's (TFM) Theses, originally provided by the School of Informatics (ETSINF) at the Universitat Politècnica de València (UPV).
+This repository contains the source code and documentation for the Master's Thesis **"Simulación de Evacuación mediante Sistemas Multi-Agentes con MESA"**.
 
-This repository allows you to start your thesis with a clean, organized foundation. While it inherits the core styling from the university's official files to ensure compliance with formatting rules, it reorganizes the file structure to make it easier to work with using modern tools.
+The project presents the development and implementation of a multi-agent simulation system for studying evacuation dynamics in emergency situations. Using the **MESA framework in Python**, a discrete grid-based model has been created to analyze the impact of individual behaviors (Polite, Aggressive, Slow) on crowd evacuation processes.
 
-### Key improvements
-Unlike the raw files from the university website, this template includes:
-* **Git-ready setup:** Includes a pre-configured `.gitignore` file to exclude LaTeX build artifacts, keeping your repository clean.
-* **Better organization:** Folders are structured logically for chapters, images, and bibliography.
-* **Template functionality:** You can instantiate a new repository directly from this one without manually copying files.
+### Key Features
+This project includes:
+*   **Discrete Grid Model:** Efficient simulation of spatial interactions and navigation.
+*   **Heterogeneous Agents:** Implementation of Polite, Aggressive, and Slow behaviors.
+*   **Metric Analysis:** Real-time monitoring of Evacuation Time, Flow Rates, and Deadlocks.
+*   **Academic Structure:** Organized LaTeX files for the thesis documentation.
 
 ### How to use
-1. Click the **Use this template** button at the top of the repository page.
-2. Choose **Create a new repository**.
-3. Clone your new repo and start editing the `main.tex` file.
+1.  **Documentation:** Compile `plantillatfg.tex` to generate the thesis PDF.
+2.  **Simulation:** Run the included Jupyter Notebooks to replicate the experiments (requires MESA).
 
 ### Recommended Setup
 To get the most out of this template, I highly recommend running LaTeX locally:
@@ -41,20 +41,20 @@ This is an unofficial adaptation. The core layout, style definitions, and academ
 ## Español
 
 ### Sobre este proyecto
-Esta es una versión modificada de la plantilla LaTeX para Trabajos de Fin de Grado (TFG) y Máster (TFM), provista originalmente por la Escuela Técnica Superior de Ingeniería Informática (ETSINF) de la Universitat Politècnica de València (UPV).
+Este repositorio contiene el código fuente y la documentación del Trabajo de Fin de Máster **"Simulación de Evacuación mediante Sistemas Multi-Agentes con MESA"**.
 
-Este repositorio permite iniciar la memoria con una base limpia y organizada. Aunque hereda los estilos principales de los archivos oficiales de la universidad para asegurar el cumplimiento de la normativa, reestructura los archivos para facilitar el trabajo con herramientas modernas.
+El trabajo presenta el desarrollo e implementación de un sistema de simulación multi-agente para el estudio de dinámicas de evacuación en situaciones de emergencia. Utilizando el **framework MESA en Python**, se ha creado un modelo discreto basado en malla que permite analizar el impacto de comportamientos individuales (Educados, Agresivos, Lentos) en procesos de evacuación.
 
-### Mejoras principales
-A diferencia de los archivos originales de la web de la universidad, esta plantilla incluye:
-* **Preparado para Git:** Incluye un archivo `.gitignore` preconfigurado para excluir los archivos temporales de compilación LaTeX, manteniendo el repositorio limpio.
-* **Mejor organización:** Carpetas estructuradas lógicamente para capítulos, imágenes y bibliografía.
-* **Funcionalidad de plantilla:** Puedes crear un repositorio nuevo directamente desde este sin tener que copiar archivos manualmente.
+### Características Principales
+El proyecto incluye:
+*   **Modelo de Malla Discreta:** Simulación eficiente de interacciones espaciales y navegación.
+*   **Agentes Heterogéneos:** Implementación de comportamientos Educados, Agresivos y Lentos.
+*   **Análisis de Métricas:** Monitorización en tiempo real de Tiempo de Evacuación, Flujo y Bloqueos.
+*   **Estructura Académica:** Archivos LaTeX organizados para la memoria del proyecto.
 
 ### Cómo usarlo
-1. Haz clic en el botón **Use this template** (Usar esta plantilla) en la parte superior de la página del repositorio.
-2. Elige **Create a new repository** (Crear un nuevo repositorio).
-3. Clona tu nuevo repo y empieza a editar el archivo `main.tex`.
+1.  **Documentación:** Compila el archivo `plantillatfg.tex` para generar el PDF de la memoria.
+2.  **Simulación:** Ejecuta los Notebooks de Jupyter incluidos para replicar los experimentos (requiere MESA).
 
 ### Configuración recomendada
 Para aprovechar al máximo esta plantilla, recomiendo ejecutar LaTeX en local:
