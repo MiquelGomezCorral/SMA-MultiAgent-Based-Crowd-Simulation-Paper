@@ -222,7 +222,7 @@ Cualquier persona interesada puede clonar el repositorio del proyecto, instalar 
 El documento se estructura en: estado del arte, donde se revisan las tecnologías actuales; análisis del problema, donde se define la estrategia de modelado; evaluación experimental, detallando métricas y escenarios; implementación técnica; y finalmente los resultados y conclusiones obtenidos.
 
 
-El desarrollo del código y la redacción de este trabajo se ha realizado totalmente a mano. Se ha hecho uso de asistentes como Copilot para la revisión y análisis de resultados, pero sin generar ningún contenido automáticamente. La única excepción es la generación automática gráficas y tablas a partir de los datos experimentales, pero siempre bajo la supervisión y control de los autores.
+El desarrollo del código y la redacción de este trabajo se ha realizado totalmente a mano. Se ha hecho uso de asistentes como Copilot o Gemini para la revisión y análisis de resultados, pero sin generar ningún contenido automáticamente. La única excepción es la generación automática gráficas y tablas a partir de los datos experimentales y referencias en el estado del arte para entender el estado actual de los sistemas. Ahora siempre bajo la supervisión y control de los autores.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                  SOTA                               %
@@ -238,7 +238,7 @@ Este capítulo evalúa el estado del arte actual en simulación de evacuación, 
 En el panorama actual de seguridad en edificaciones, la simulación de evacuación responde principalmente a regulaciones de seguridad y Diseño Basado en Prestaciones para garantizar evacuaciones efectivas en situaciones de emergencia.
 
 \subsection{Diseño Basado en Prestaciones (PBD) y Seguridad}
-Históricamente, los códigos de edificación eran toscos, dictando reglas rígidas sobre anchos de escalera y distancias de evacuación. El enfoque PBD permite diseños flexibles siempre que se demuestre, mediante simulación, que se cumplen los criterios de seguridad \cite{TODO_sfpe_handbook}.
+Históricamente, los códigos de edificación eran toscos, dictando reglas rígidas sobre anchos de escalera y distancias de evacuación. El enfoque PBD permite diseños flexibles siempre que se demuestre, mediante simulación, que se cumplen los criterios de seguridad \cite{hurley-2015}.
 
 La métrica fundamental en PBD es la relación entre el Tiempo Disponible para la Evacuación Segura (ASET) y el Tiempo Requerido para la Evacuación Segura (RSET). Para que un diseño sea válido, debe cumplirse que:
 
@@ -254,14 +254,14 @@ Mientras que el ASET depende de la dinámica del fuego (toxicidad, calor, humo),
 \end{itemize}
 
 \subsection{Nota sobre Nivel de Servicio (LOS)}
-Aunque existen metodologías como el Nivel de Servicio (LOS) para evaluar el confort peatonal en situaciones no urgentes \cite{TODO_fruin}, este trabajo se centra exclusivamente en evacuación de emergencia. Por tanto, las métricas de confort no son consideradas.
+Aunque existen metodologías como el Nivel de Servicio (LOS) para evaluar el confort peatonal en situaciones no urgentes \cite{unknown-author-no-dateA}, este trabajo se centra exclusivamente en evacuación de emergencia. Por tanto, las métricas de confort no son consideradas.
 \section{Marcos Regulatorios y Validación}
 
 Para que un modelo de simulación sea considerado una herramienta válida y no un mero ejercicio teórico, debe adherirse a estándares de validación internacionales.
 
 \begin{itemize}
-    \item \textbf{ISO 20414:2020}: Esta norma establece protocolos rigurosos de verificación y validación para modelos de evacuación. Exige pruebas de componentes (por ejemplo, verificar que un agente se mueve a la velocidad asignada), verificación funcional (capacidad de flujo en puertas, contraflujo en pasillos) y validación cualitativa de comportamientos emergentes como la formación de arcos en las salidas \cite{TODO_iso_standard}.
-    \item \textbf{NIST y SFPE}: El National Institute of Standards and Technology y la Society of Fire Protection Engineers proporcionan los datos demográficos y de comportamiento estándar (velocidades según edad, dimensiones corporales) que deben utilizarse para configurar los agentes \cite{TODO_nist_tn}.
+    \item \textbf{ISO 20414:2020}: Esta norma establece protocolos rigurosos de verificación y validación para modelos de evacuación. Exige pruebas de componentes (por ejemplo, verificar que un agente se mueve a la velocidad asignada), verificación funcional (capacidad de flujo en puertas, contraflujo en pasillos) y validación cualitativa de comportamientos emergentes como la formación de arcos en las salidas \cite{unknown-author-no-dateB}.
+    \item \textbf{NIST y SFPE}: El National Institute of Standards and Technology y la Society of Fire Protection Engineers proporcionan los datos demográficos y de comportamiento estándar (velocidades según edad, dimensiones corporales) que deben utilizarse para configurar los agentes \cite{unknown-author-no-dateC}.
 \end{itemize}
 
 Dado el alcance académico de este trabajo, no se pretende certificar el modelo bajo ISO 20414, pero se han seguido sus directrices para asegurar una base sólida y reproducible.
@@ -273,13 +273,13 @@ La lógica de un simulador de multitudes reside en sus algoritmos de navegación
 \subsection{Modelos de Espacio Continuo}
 Dominantes en la industria de la animación y la robótica por su fidelidad visual.
 \begin{itemize}
-    \item \textbf{Social Force Model (SFM)}: Propuesto por Helbing \cite{TODO_helbing}, trata a los agentes como partículas sometidas a fuerzas newtonianas. Combina una fuerza impulsora hacia la meta con fuerzas repulsivas para mantener la distancia personal.
-    \item \textbf{Optimal Reciprocal Collision Avoidance (ORCA)}: Opera en el espacio de velocidades para garantizar matemáticamente trayectorias libres de colisiones \cite{TODO_orca}. Aunque eficiente, puede resultar en comportamientos 'perfectos' o robóticos.
+    \item \textbf{Social Force Model (SFM)}: Propuesto por Helbing \cite{helbing-1995}, trata a los agentes como partículas sometidas a fuerzas newtonianas. Combina una fuerza impulsora hacia la meta con fuerzas repulsivas para mantener la distancia personal.
+    \item \textbf{Optimal Reciprocal Collision Avoidance (ORCA)}: Opera en el espacio de velocidades para garantizar matemáticamente trayectorias libres de colisiones \cite{van-den-berg-no-date}. Aunque eficiente, puede resultar en comportamientos 'perfectos' o robóticos.
 \end{itemize}
 
 \subsection{Modelos Discretos y Grid-Based}
 Los modelos basados en Autómatas Celulares (CA) o mallas discretas dividen el espacio en celdas. Son la base del sistema implementado en este trabajo.
-El desafío principal es la resolución de conflictos (cuando dos agentes compiten por la misma celda). El estado del arte actual emplea \textit{Floor Fields} (campos de potencial) estáticos y dinámicos para guiar a los agentes, y utiliza teoría de juegos o heurísticas de "paciencia" para resolver bloqueos, superando las reglas simples de exclusión \cite{TODO_floor_fields}.
+El desafío principal es la resolución de conflictos (cuando dos agentes compiten por la misma celda). El estado del arte actual emplea \textit{Floor Fields} (campos de potencial) estáticos y dinámicos para guiar a los agentes, y utiliza teoría de juegos o heurísticas de "paciencia" para resolver bloqueos, superando las reglas simples de exclusión \cite{davidich-2012}.
 
 Ya que este es el elegido para el sistema, se profundiza más adelante.
 
