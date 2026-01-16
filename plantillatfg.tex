@@ -714,14 +714,18 @@ Para crear la ilusión de diferentes niveles de agresividad, se implementa una l
 
 \subsection{3. Gestión de Bloqueos (Deadlock)}
 Se ha implementado un mecanismo de \textbf{Contador de Bloqueo} ($C_{dl}$) para situaciones donde el flujo se detiene (p.ej., dos flujos opuestos en un pasillo estrecho).
+
+El factor de bloqueo es la métrica clave para entender la congestión. Se calcula como la cantidad de ticks en los que se ha intentado mover pero no ha podido, multiplicado por un factor específico para cada tipo de agente más un componente de influencia de los vecinos.
+
 \begin{itemize}
     \item Si un agente intenta moverse pero no puede, incrementa su contador $C_{dl}$.
-    \item Cuando $C_{dl}$ supera un umbral, el agente entra en estado de "Pánico/Presión".
+    \item Cuando $C_{dl}$ supera un umbral, el agente entra en estado de "Pánico/Presión". 
     \item En este estado, el agente relaja sus reglas de movimiento: puede aceptar moverse a celdas que \textit{no} reducen la distancia óptima y puede incluso retroceder o moverse lateralmente para aliviar la congestión, dejando pasar a otros agentes.
     \item El estado de bloqueo se "contagia" localmente: los agentes perciben la frustración de sus vecinos, incrementando sus propios contadores, lo que cataliza una respuesta de grupo para desatascar la zona.
 \end{itemize}
 
-Cuando la congestión se resuelve, el contador se reduce rápidamente, permitiendo que el agente vuelva a su comportamiento normal.
+Cuando la congestión se resuelve, el contador se reduce rápidamente, permitiendo que el agente vuelva a su comportamiento normal. Rangos de menos de 1 no afectan prácticamente al movimiento, mientras que valores mayores de 3 empiezan a tener un impacto significativo.
+
 
 \section{Flujo continuo}
 
@@ -910,11 +914,18 @@ El punto óptimo parece estar alrededor de 4 salidas distribuidas uniformemente 
 \textbf{Resultados} (escenario Seats, 125 agentes):
 
 \begin{itemize}
-    \item Ancho 1x: 142.3  steps, factor de bloqueo = 0.42, densidad local = 2.03
-    \item Ancho 2x: 103.0 steps (+1.6\%), factor de bloqueo = 0.35, densidad local = 1.85
-    \item Ancho 3x: 101.2 steps (+11.4\%), factor de bloqueo = 0.15, densidad local = 1.42
-    \item Ancho 4x: 99.8 steps (+0.1\%), factor de bloqueo = 0.03, densidad local = 1.06
+    \item \textbf{Ancho 1 celda}: 142.3  steps, factor de bloqueo = 0.42, densidad local = 2.03
+    \item \textbf{Ancho 2 celdas}: 103.0 steps (+1.6\%), factor de bloqueo = 0.35, densidad local = 1.85
+    \item \textbf{Ancho 3 celdas}: 101.2 steps (+11.4\%), factor de bloqueo = 0.15, densidad local = 1.42
+    \item \textbf{Ancho 4 celdas}: 99.8 steps (+0.1\%), factor de bloqueo = 0.03, densidad local = 1.06
 \end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.75\linewidth]{images/plot_width_impact.png}
+	\caption{Impacto del ancho de los pasillos hacia la salida en el tiempo total de evacuación en Seats con 125 agentes.}
+	\label{fig:plot_width_impact}
+\end{figure}
 
 \textbf{Resultado sorprendente}: Ampliar el ancho de salida, solo se ve una reducción significativa en el tiempo de evacuación al pasar de 1 a 2 en un 29.8\% (142.3 a 99.8 steps), mucho menos de lo esperado. A partir de ahí, las ganancias son marginales (menos del 2\% adicional), saturándose.
 
@@ -922,79 +933,11 @@ El punto óptimo parece estar alrededor de 4 salidas distribuidas uniformemente 
 
 \textbf{Implicación de diseño}: A la hora de diseñar rutas de evacuación, es crucial identificar hasta donsde un cambio agiliza la evacuación, y no limitarse a ampliar sin más. Si se pueden añadir más butacas sin afectar la evacuación, es preferible hacerlo para maximizar la capacidad del espacio. Después, habrá que analizar que otros factores (num. agentes, comportamiento, etc.) están limitando el flujo.
 
-\section{Análisis de Métricas de Comportamiento}
-
-Esta sección analiza la \textit{calidad} del movimiento de la multitud usando cuatro indicadores clave de comportamiento: \textbf{Tasa de Evacuación}, \textbf{Velocidad Promedio Macro}, \textbf{Factor de Bloqueo} y \textbf{Densidad Local}.
-
-\subsection{Impacto de la Densidad de Agentes en el Comportamiento}
-
-A medida que el número de agentes aumenta (10 $\to$ 300), se observa una clara degradación en la calidad del movimiento pero un aumento en el rendimiento del sistema:
-
-\begin{itemize}
-    \item \textbf{Trade-off Rendimiento vs. Eficiencia}: A medida que aumenta el número de agentes, la \textbf{Tasa de Evacuación} (agentes que salen por paso) aumenta significativamente (de $\sim$0.5 a $\sim$5.5), simplemente porque más agentes están presionando contra las salidas. Sin embargo, la eficiencia individual disminuye: la \textbf{Velocidad Promedio Macro} disminuye un 32\% (0.43 a 0.29). En resumen: \textbf{Más agentes significan una tasa de flujo colectivo más alta, pero movimiento individual más lento.}
-    \item \textbf{Congestión}: La Densidad Local aumenta linealmente de \textbf{0.18} a \textbf{2.10}, indicando hacinamiento extremo.
-    \item \textbf{Variabilidad}: La desviación estándar de la tasa de evacuación aumenta con la densidad, lo que significa que el flujo se vuelve más volátil (ráfagas de agentes saliendo seguidas de pausas).
-    \item \textbf{Bloqueo}: El Factor de Bloqueo aumenta bruscamente de negligible (\textbf{0.00}) en baja densidad a \textbf{0.22} con 300 agentes. Esto significa que >20\% de la multitud está atascada en cualquier momento dado en ejecuciones de alta densidad.
-    \item \textbf{Correlación}: Existe una fuerte correlación inversa entre Densidad Local y Velocidad Promedio, confirmando que la densidad es el principal motor de fricción.
-\end{itemize}
-
-\subsection{Rasgos de Comportamiento: Agresión vs. Lentitud}
-
-Comparar el impacto de la "personalidad" del agente en la dinámica de flujo revela tendencias direccionales similares pero con efectos opuestos:
-
-\begin{table}[H]
-\centering
-\begin{tabular}{lcccp{5cm}}
-\toprule
-\textbf{Métrica} & \textbf{Educado} & \textbf{Agresivo} & \textbf{Lento} & \textbf{Insight} \\
-\midrule
-Tasa de Evacuación & $\sim$2.40 & \textbf{2.76} (+15\%) & 1.74 (-27\%) & La agresión mejora la tasa de flujo; la lentitud la paraliza. \\
-Factor de Bloqueo & 0.73 & \textbf{0.61} (-16\%) & 0.70 ($\sim$) & \textbf{Resultado Sorprendente:} Los agentes agresivos causan \textit{menos} bloqueos. Resuelven conflictos más rápido tomando posiciones en lugar de esperar. \\
-Velocidad Promedio & 0.37 & 0.38 ($\sim$) & \textbf{0.26} (-30\%) & La agresividad mantiene velocidad/flujo; la lentitud la reduce significativamente. \\
-\bottomrule
-\end{tabular}
-\caption{Comparación de métricas de comportamiento según el tipo de agente}
-\end{table}
-
-\textbf{Hallazgo Clave}: En este modelo de simulación, la "Agresión" actúa como un mecanismo de resolución de conflictos que previene comportamientos de congelamiento, llevando a un flujo general más suave a pesar de la implícita falta de educación. Por el contrario, los agentes lentos reducen la tasa de flujo efectiva de todo el sistema.
-
-\subsection{Factores Estratégicos: Salidas y Preferencias}
-
-La elección de la estrategia de salida exhibe el impacto más dramático en las métricas de comportamiento:
-
-\begin{itemize}
-    \item \textbf{Preferencia de Salida (Forzada)}:
-    \begin{itemize}
-        \item El \textbf{Factor de Bloqueo} se dispara a \textbf{3.33} (comparado con 0.13 sin preferencia). Esta irregularidad masiva sugiere que los agentes se bloquean físicamente entre sí mientras intentan cruzar caminos para alcanzar salidas distantes.
-        \item La \textbf{Tasa de Evacuación} cae en picado a \textbf{0.61} (vs 2.10). \textbf{Tener preferencias por salidas específicas ralentiza significativamente la tasa de evacuación.}
-        \item \textbf{Conclusión}: Los comportamientos rígidos en la dinámica de multitudes llevan a falla sistémica (bloqueo).
-    \end{itemize}
-    
-    \item \textbf{Número de Salidas}:
-    \begin{itemize}
-        \item \textbf{Flujo y Distribución}: Más salidas llevan a evacuación más rápida, pero hay rendimientos decrecientes. Una vez que todos los bordes tienen al menos una salida (ej., 4 salidas), agregar más produce mejoras mínimas.
-        \item \textbf{Caída del Bloqueo}: Crucialmente, aumentar el número de salidas causa que el \textbf{Factor de Bloqueo} caiga significativamente (0.75 con 1 salida $\to$ 0.07 con 4 salidas). Esto confirma que distribuir agentes a múltiples puntos les permite dispersarse, reduciendo la congestión local.
-    \end{itemize}
-    
-    \item \textbf{Ancho de Salida (Ampliación)}:
-    \begin{itemize}
-        \item El \textbf{Factor de Bloqueo} cae sistemáticamente: 0.42 (Ancho x1) $\to$ \textbf{0.03} (Ancho x3/x4).
-        \item La \textbf{Densidad Local} disminuye: 2.03 $\to$ 1.06.
-        \item \textbf{Conclusión}: Ampliar las salidas resuelve el problema de obstrucción del "arco", virtualmente eliminando los retrasos basados en interacción en el punto de salida.
-    \end{itemize}
-\end{itemize}
-
-\subsection{Resumen de Correlaciones}
-
-\begin{itemize}
-    \item \textbf{Densidad Local} es la variable maestra: se correlaciona inversamente con Velocidad y Flujo. Alta densidad garantiza menor rendimiento individual de los agentes.
-    \item \textbf{Bloqueo} es un síntoma de diseño pobre (Salidas Estrechas) o estrategia pobre (Preferencia de Salida), pero \textit{no} necesariamente alta densidad sola (a menos que la densidad sea extrema).
-    \item \textbf{Agresión} se correlaciona negativamente con Bloqueo (más agresión = menos bloqueo), desafiando la suposición de que el comportamiento educado es siempre óptimo para multitudes.
-\end{itemize}
-
 \section{Análisis de Evolución Temporal}
 
-Mientras que los resultados agregados revelan patrones a nivel de sistema, el análisis temporal paso a paso expone la \textit{dinámica} de los procesos de evacuación. Esta sección examina cómo evolucionan los bloqueos y la velocidad a lo largo del tiempo normalizado de la simulación, enfocándose en los experimentos de \textbf{Preferencias de Salida} y \textbf{Ancho de Salida}.
+Mientras que los resultados agregados revelan patrones a nivel de sistema, el análisis temporal paso a paso expone la \textit{dinámica} de los procesos de evacuación. 
+
+Esta sección examina cómo evolucionan los bloqueos y la velocidad a lo largo del tiempo, enfocándose en los experimentos de \textbf{Preferencias de Salida} y \textbf{Ancho de Salida}. Las razones por la que se estudian solo estos dos casos son: son suficientes para ilustrar el análisis temporal, y el scope del trabajo no permite extenderse más.
 
 \subsection{Metodología de Normalización Temporal}
 
@@ -1003,11 +946,13 @@ Para comparar simulaciones de diferente duración, se implementó una normalizac
 t_{\text{norm}} = \frac{\text{Step actual}}{\text{Step máximo}} \in [0, 1]
 \end{equation}
 
-El tiempo normalizado se dividió en 10 intervalos (bins) de igual amplitud: [0-10\%, 10-20\%, ..., 90-100\%], permitiendo agregar métricas en fases equivalentes del proceso de evacuación.
+El tiempo normalizado se dividió en 10 intervalos (bins) de igual amplitud: [0-10\%, 10-20\%, ..., 90-100\%], permitiendo agregar métricas en fases equivalentes del proceso de evacuación. Es como medir 'fase de inicio', 'fase de congestión', 'fase de resolución', etc.
 
 \subsection{Dinámica de las Preferencias de Salida}
 
 \subsubsection{Evolución del Factor de Bloqueo}
+
+
 
 El análisis temporal revela tres fases distintas en las simulaciones con preferencias de salida:
 
@@ -1015,7 +960,7 @@ El análisis temporal revela tres fases distintas en las simulaciones con prefer
 
 \textbf{Fase 2: Congestión Creciente (10-50\%)}: Con preferencias, el bloqueo crece exponencialmente, alcanzando su pico en el rango 40-50\% con un factor de 3.94. Esto representa un aumento del \textbf{722\%} comparado con el pico sin preferencias (0.48 en el rango 60-70\%).
 
-\textbf{Fase 3: Resolución Prolongada (50-100\%)}: La congestión persiste durante el 32.8\% de la duración total de las simulaciones con preferencias, comparado con solo 16.2\% sin preferencias. Esto indica un tiempo de resolución de conflictos \textbf{102\% más largo}.
+\textbf{Fase 3: Resolución Prolongada (50-100\%)}: La congestión persiste durante el 32.8\% de la duración total de las simulaciones con preferencias, comparado con solo 16.2\% sin preferencias. Esto indica un \textbf{tiempo de resolución de conflictos 102\% más largo}.
 
 \textbf{Momento Crítico}: El pico de bloqueo ocurre en promedio en $t_{\text{norm}} = 0.42$ para preferencias vs. $t_{\text{norm}} = 0.65$ sin preferencias. Esto significa que el colapso del flujo sucede \textit{antes} en el proceso cuando hay preferencias rígidas.
 
@@ -1023,11 +968,11 @@ El análisis temporal revela tres fases distintas en las simulaciones con prefer
 
 La velocidad macro actúa como un \textit{indicador predictivo} de congestión inminente:
 
-\textbf{Degradación Temprana}: Con preferencias, la velocidad cae de 0.37 (inicio) a 0.21 (pico de congestión, 40-50\%), una reducción del 43\%. Sin preferencias, la caída es más gradual: de 0.37 a 0.30 (19\% de reducción).
+\textbf{Degradación Temprana}: Con preferencias, la velocidad cae de 0.37 (inicio) a 0.21 (pico de congestión, 40-50\%). Sin preferencias, la caída es más gradual: de 0.37 a 0.30.
 
-\textbf{Patrón de Recuperación}: Sin preferencias, la velocidad se recupera rápidamente después del 60\%, alcanzando 0.35 al final (recuperación del 95\%). Con preferencias, la recuperación es incompleta: apenas alcanza 0.28 al final (76\% de recuperación).
+\textbf{Patrón de Recuperación}: Sin preferencias, la velocidad se recupera rápidamente después del 60\%, alcanzando 0.35 al final. Con preferencias, la recuperación es incompleta: apenas alcanza 0.28 al final. Ambas empiezan en 0.37 pero solo la sin preferencias recupera el valor inicial.
 
-\textbf{Insight Clave}: La velocidad promedio \textit{desciende 10-20\% del tiempo normalizado \textbf{antes} de que el factor de bloqueo alcance su pico}. Esto convierte a la velocidad en una señal de alerta temprana viable para sistemas de monitoreo en tiempo real.
+\textbf{Punto Clave}: La velocidad promedio \textit{desciende 10-20\% del tiempo normalizado \textbf{antes} de que el factor de bloqueo alcance su pico}. Esto convierte a la velocidad en una señal de alerta temprana viable para sistemas de monitoreo en tiempo real.
 
 \subsubsection{Mecanismo Causal: Tráfico Cruzado}
 
@@ -1035,24 +980,26 @@ El análisis temporal confirma que el problema fundamental con las preferencias 
 
 Este patrón genera:
 \begin{itemize}
-    \item \textbf{Bloqueos No Localizados}: La congestión ocurre en el espacio abierto intermedio, no en las salidas
-    \item \textbf{Cascadas de Interferencia}: Un bloqueo en una ruta fuerza a agentes a recalcular, cruzando más rutas
-    \item \textbf{Saturación Prematura}: El espacio utilizable se reduce efectivamente al convertirse en una "intersección de alto tráfico"
+    \item \textbf{Bloqueos No Localizados}: La congestión ocurre en el espacio abierto intermedio, no en las salidas.
+    \item \textbf{Cascadas de Interferencia}: Un bloqueo en una ruta fuerza a agentes a moverse hacía más direcciones cuando están en modo pánico, cruzando más rutas y bloqueando aún más.
+    \item \textbf{Saturación Prematura}: El espacio libre por el que circulan los agentes se reduce al convertirse en una 'intersección de alto tráfico'.
 \end{itemize}
 
 \subsection{Dinámica del Ancho de Salida}
 
 \subsubsection{Resultado Contraintuitivo en Entornos Estructurados}
 
-En el escenario \textbf{Seats}, ampliar las salidas de 1x a 4x produce cambios mínimos en el tiempo total de evacuación (<1\% de diferencia), pero el análisis temporal revela \textit{cambios significativos en la distribución de la congestión}:
+En el escenario \textbf{Seats}, ampliar los pasillos hacia las salidas de 1 una celda a 4, produce cambios mínimos en el tiempo total de evacuación (<1\% de diferencia), pero el análisis temporal revela \textit{cambios significativos en la distribución de la congestión}:
 
-\textbf{Ancho 1x}: Factor de bloqueo pico = 1.24 en el rango 70-80\%
+\textbf{Ancho 1 celda}: Factor de bloqueo pico = 1.24 en el rango 70-80\%
 
-\textbf{Ancho 2x}: Factor de bloqueo pico = 1.18 en el rango 60-70\%
+\textbf{Ancho 2 celdas}: Factor de bloqueo pico = 1.18 en el rango 60-70\%
 
-\textbf{Ancho 3x}: Factor de bloqueo pico = 1.14 en el rango 50-60\%
+\textbf{Ancho 3 celdas}: Factor de bloqueo pico = 1.14 en el rango 50-60\%
 
-\textbf{Ancho 4x}: Factor de bloqueo pico = 1.10 en el rango 40-50\%
+\textbf{Ancho 4 celdas}: Factor de bloqueo pico = 1.10 en el rango 40-50\%
+
+
 
 \textbf{Patrón Observado}: Salidas más anchas \textit{adelantan} la aparición del pico de bloqueo, pero no reducen significativamente su magnitud ni el tiempo total de evacuación. Esto se debe a que el cuello de botella real está en la navegación entre las filas de asientos, no en la capacidad de la salida.
 
@@ -1060,23 +1007,25 @@ En el escenario \textbf{Seats}, ampliar las salidas de 1x a 4x produce cambios m
 
 A diferencia del experimento de preferencias, el ancho de salida tiene impacto mínimo en la velocidad macro promedio:
 \begin{itemize}
-    \item Ancho 1x: velocidad promedio = 0.28
-    \item Ancho 4x: velocidad promedio = 0.28
+    \item \textbf{Ancho 1 celda}: velocidad promedio = 0.28
+    \item \textbf{Ancho 4 celdas}: velocidad promedio = 0.28
 \end{itemize}
 
 Esto confirma que en Seats, los agentes pasan la mayor parte del tiempo navegando entre obstáculos internos a velocidad constante, no esperando en colas en las salidas. Las salidas anchas mejoran la \textit{experiencia} (menor hacinamiento en la puerta), pero no la \textit{eficiencia} (tiempo total).
 
-\subsection{Implicaciones para el Diseño}
+Es por esto, que vemos la utilidad de analizar la evolución temporal, ya que nos permite ver estos detalles que no se aprecian en los resultados agregados. Se demuestra así el potencial que tienen este tipo de herramientas para el análisis de evacuaciones.
 
-El análisis temporal revela principios de diseño que no son evidentes en métricas agregadas:
 
-\textbf{1. Evitar Asignaciones Rígidas}: Los sistemas de señalización deben ser \textit{adaptativos}, redirigiendo a las personas hacia salidas con menor congestión observada, no hacia salidas predefinidas.
 
-\textbf{2. Monitoreo de Velocidad}: Implementar sensores de velocidad de flujo puede proporcionar alertas 10-20\% antes de que ocurran bloqueos críticos, permitiendo intervenciones tempranas.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                 CONCLUSIONES                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusiones y Trabajo Futuro}
 
-\textbf{3. Contexto del Ancho de Salida}: Ampliar salidas es efectivo en \textit{espacios abiertos} donde las personas llegan simultáneamente, pero menos útil en \textit{espacios estructurados} donde llegan escalonadamente.
+\section{Conclusiones}
 
-\textbf{4. Fases de Congestión}: Los diseñadores deben considerar no solo el pico de congestión, sino su \textit{duración}. Configuraciones que producen picos altos pero breves pueden ser preferibles a picos moderados pero persistentes.
+- Se ha demostrado que se puede hacer uso del sistema para modelar evacuaciones en diferentes escenarios y con diferentes tipos de agentes, analizar el efecto de la geometría del entorno y que se pueden experimentar con parámetros específicos de los escenarios
+- Que se puede hacer un análisis detallado de la evolución temporal de las métricas clave durante la simulación, revelando dinámicas de congestión y patrones de flujo que no son evidentes en los resultados agregados.
 
 \section{Conclusiones Generales}
 
@@ -1089,12 +1038,8 @@ El análisis temporal revela principios de diseño que no son evidentes en métr
 \end{enumerate}
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                 CONCLUSIONES                                 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Conclusiones y Trabajo Futuro}
 
-\section{Conclusiones}
+
 El presente trabajo ha demostrado la viabilidad de utilizar simulaciones basadas en agentes sobre rejillas discretas (MESA) para el estudio de procesos de evacuación en emergencias, ofreciendo un equilibrio entre complejidad computacional y riqueza de comportamiento en situaciones de evacuación.
 
 De los experimentos de evacuación realizados, se extraen las siguientes conclusiones principales:
