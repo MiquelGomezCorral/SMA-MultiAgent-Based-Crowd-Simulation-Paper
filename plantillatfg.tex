@@ -624,7 +624,7 @@ El \textbf{factor de bloqueo} disminuye del 0.73 (educados) al 0.61 (agresivos).
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1\linewidth]{images/plot_aggressive_impact.png}
+	\includegraphics[width=0.85\linewidth]{images/plot_aggressive_impact.png}
 	\caption{Impacto de la proporción de agentes agresivos en Seats (200 agentes).}
 	\label{fig:plot_aggressive_impact}
 \end{figure} 
@@ -645,7 +645,7 @@ La velocidad macro promedio cae de 0.37 (sin lentos) a 0.26 (100\% lentos), una 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=1\linewidth]{images/plot_slow_impact.png}
+	\includegraphics[width=0.85\linewidth]{images/plot_slow_impact.png}
 	\caption{Impacto de la proporción de agentes lentos en Seats (200 agentes).}
 	\label{fig:plot_slow_impact}
 \end{figure}
@@ -742,8 +742,9 @@ El análisis temporal reveló que el colapso del flujo (deadlock masivo) es pred
 
 \section{Trabajo Futuro}
 \begin{itemize}
-    \item \textbf{Re-planificación Cognitiva}: Implementar mapas de calor dinámicos (repulsión por densidad) para que los agentes eviten zonas congestionadas proactivamente.
-    \item \textbf{Movimiento Continuo}: Añadir coordenadas continuas dentro de las celdas (sub-grid movement) para permitir adelantamientos y flujos más fluidos.
+    \item \textbf{Re-planificación Dinámica}: Implementar mapas de calor dinámicos (que los agentes actualicen por densidad) para que los agentes eviten zonas congestionadas proactivamente.
+    \item \textbf{Movimiento Continuo}: Añadir coordenadas continuas dentro de las celdas (sub-grid movement) para permitir adelantamientos y flujos más fluidos sin las limitaciones del modelo de celda discreta.
+    \item \textbf{Validación Empírica}: Comparar los resultados del modelo con datos reales de evacuaciones para calibrar y validar las reglas de comportamiento.
     \item \textbf{Métricas de Pánico}: Integrar un modelo de contagio emocional que altere los parámetros de los agentes durante la simulación.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
